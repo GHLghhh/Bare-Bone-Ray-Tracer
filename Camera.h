@@ -19,9 +19,10 @@ public:
   virtual PixelRays CastRays(const Sampler2D& sampler, const ViewPlane& viewPlane) = 0;
 
 protected:
-  Vec3 lookAt_;
-  Vec3 up_;
-  Vec3 right_;
+  // Note: inverse look at direction, need (* -1)
+  Vec3 w_;
+  Vec3 u_;
+  Vec3 v_;
 };
 
 class PerspectiveCamera : public Camera {

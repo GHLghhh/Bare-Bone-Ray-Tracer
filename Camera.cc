@@ -3,9 +3,15 @@
 #include <iostream>
 
 Camera::Camera(Vec3 position, Vec3 lookAt, Vec3 up)
-  : Object(position), lookAt_(lookAt), up_(up)
+  : Object(position)
 {
-  right_ = Vec3::Cross(lookAt_, up_);
+  w_ = lookAt * -1;
+  u_ = Vec3::Cross(up, w_);
+  v_ = Vec3::Cross(w_, u_);
+  
+  w_ /= w_.Length();
+  u_ /= u_.Length();
+  v_ /= v_.Length();
 }
 
 PerspectiveCamera::PerspectiveCamera(Vec3 position, Vec3 lookAt, Vec3 up,
@@ -31,9 +37,9 @@ PixelRays PerspectiveCamera::CastRays(const Sampler2D& sampler, const ViewPlane&
         // Apply adjustment value and
         // get the sample position in terms of world coordinate
         Vec3 pixelPoint = position_
-          + lookAt_ * viewPlaneDepth_
-          + right_ * (pixelXPosition + sample.first) * viewPlane.PixelWidth()
-          + up_ * (pixelYPosition + sample.second) * viewPlane.PixelHeight();
+          + w_ * (viewPlaneDepth_ * -1)
+          + u_ * (pixelXPosition + sample.first) * viewPlane.PixelWidth()
+          + v_ * (pixelYPosition + sample.second) * viewPlane.PixelHeight();
         
         res.back().back().push_back(Ray(position_, pixelPoint - position_));
       }
@@ -65,10 +71,10 @@ PixelRays OrthographicCamera::CastRays(const Sampler2D& sampler, const ViewPlane
         // Apply adjustment value and
         // get the sample position in terms of world coordinate
         Vec3 pixelPoint = position_
-          + right_ * (pixelXPosition + sample.first) * viewPlane.PixelWidth()
-          + up_ * (pixelYPosition + sample.second) * viewPlane.PixelHeight();
+          + u_ * (pixelXPosition + sample.first) * viewPlane.PixelWidth()
+          + v_ * (pixelYPosition + sample.second) * viewPlane.PixelHeight();
         
-        res.back().back().push_back(Ray(pixelPoint, lookAt_));
+        res.back().back().push_back(Ray(pixelPoint, w_ * -1));
       }
     }
   }
