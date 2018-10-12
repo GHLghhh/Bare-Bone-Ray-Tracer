@@ -32,6 +32,7 @@ void World::AddLightSource(Light* objPtr)
   lights_.push_back(objPtr);
 }
 
+// [TODO] normalize color range in returning "Scene"
 Scene World::Render()
 {
   Scene res;
@@ -64,11 +65,13 @@ Scene World::Render()
               // No hit, use background color for this sample
               if (t == -1) {
                 resColor += backGroundColor;
-              } else if (lights_.size() > 0) {
-                // [TODO] here assuming only one light source
-                // and haven't consider shadow yet.
-                resColor += Shader::Diffuse(sr, *lights_[0]);
-              }
+              } else {
+                // [TODO] ambient component
+                for (Light* light : lights_) {
+                  resColor += Shader::Diffuse(sr, *light);
+                  //resColor += Shader::Specular(sr, *light);
+                }
+              } 
           }
           res.back().push_back(resColor / pixelsInRowColumn.size());
       }

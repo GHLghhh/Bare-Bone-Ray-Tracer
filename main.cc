@@ -22,7 +22,7 @@ void ToPNG(const std::string& filename, const Scene& scene)
   // Ray tracer use (0,0) as bottom-left corner, y++ goes up and x++ goes right
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
-      RGBColor pixel = scene[x][y].To8Bit();
+      RGBColor pixel = scene[x][y].MaxToOne().To8Bit();
       *out(x, (height-1)-y) = RGBAPixel(pixel.x, pixel.y, pixel.z);
     }
   }

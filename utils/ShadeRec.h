@@ -10,7 +10,9 @@ public:
   RGBColor color;
   Vec3 normal;
   Vec3 hitPosition;
+  Vec3 eyePosition;
   // [TODO] This should be property of the hitted material
   // (now hard coded in ShadeRecctr)
   double diffuseCoefficient;
+  double specularCoefficient;
 };
