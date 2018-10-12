@@ -15,4 +15,5 @@ public:
   // (now hard coded in ShadeRecctr)
   double diffuseCoefficient;
   double specularCoefficient;
+  double shininess;
 };

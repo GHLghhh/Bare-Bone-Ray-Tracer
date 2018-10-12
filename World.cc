@@ -66,10 +66,10 @@ Scene World::Render()
               if (t == -1) {
                 resColor += backGroundColor;
               } else {
-                // [TODO] ambient component
+                // [TODO] ambient component and wrap everything into a shading model?
                 for (Light* light : lights_) {
                   resColor += Shader::Diffuse(sr, *light);
-                  //resColor += Shader::Specular(sr, *light);
+                  resColor += Shader::Specular(sr, *light);
                 }
               } 
           }
