@@ -5,8 +5,6 @@
 Sphere::Sphere(Vec3 position, double radius, RGBColor color)
   : GeometricObject(position, color)
 {
-  // Sphere has no fixed normal, it depends on point position on sphere
-  normal_ = Vec3(0,0,0);
   radius_ = radius;
 }
 
@@ -24,11 +22,15 @@ bool Sphere::Hit(const Ray& ray, double& tMin, ShadeRec& sr)
     double t = (t1 > kEPSILON ? t1 : (t2 > kEPSILON ? t2 : -1));
     if (t > kEPSILON) {
       tMin = t;
-      sr.hitPosition = ray.Position() + ray.Direction() * t;
-      sr.normal = sr.hitPosition - position_;
-      sr.color = color_;
+      FillShadeRec(ray, t, sr);
       return true;
     }
   }
   return false;
+}
+
+void Sphere::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
+{
+  GeometricObject::FillShadeRec(ray, t, sr);
+  sr.normal = sr.hitPosition - position_;
 }

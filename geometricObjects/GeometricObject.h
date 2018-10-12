@@ -12,6 +12,6 @@ public:
   ~GeometricObject() = default;
   virtual bool Hit(const Ray& ray, double& t, ShadeRec& s) = 0;
 protected:
+  virtual void FillShadeRec(const Ray& ray, const double t, ShadeRec& sr);
   RGBColor color_;
-  Vec3 normal_;
 };
