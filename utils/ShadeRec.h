@@ -5,7 +5,9 @@
 
 class ShadeRec {
 public:
-  ShadeRec();
+  ShadeRec() = default;
+  // [TODO] put eye position for shaidng here?
+  ShadeRec(const Vec3& eyePosition);
 
   RGBColor color;
   Vec3 normal;

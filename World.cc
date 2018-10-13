@@ -52,7 +52,7 @@ Scene World::Render()
               ShadeRec sr;
               for (GeometricObject* objPtr : geometricObjects_) {
                   double tTemp;
-                  ShadeRec srTemp;
+                  ShadeRec srTemp(cameraPtr_->Position());
                   // Hit
                   if (objPtr->Hit(ray, tTemp, srTemp)) {
                     // Check if closer

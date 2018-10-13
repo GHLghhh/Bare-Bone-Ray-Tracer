@@ -17,9 +17,9 @@ RGBColor Shader::Specular(const ShadeRec& sr, const Light& light)
   Vec3 lightDirection = light.ToLightDirection(sr.hitPosition);
   Vec3 reflectDirection =
     sr.normal * Vec3::Dot(sr.normal, lightDirection) * 2 - lightDirection;
-  double reflectCoefficient = pow(
-    Vec3::Dot(reflectDirection, sr.eyePosition - sr.hitPosition),
-    sr.shininess);
+  double reflectCoefficient = 
+    Vec3::Dot(reflectDirection, (sr.eyePosition - sr.hitPosition).Unit());
+  reflectCoefficient = (reflectCoefficient > 0) ? reflectCoefficient : 0;
   return (light.Color() * sr.color) * sr.specularCoefficient
-    * ((reflectCoefficient > 0) ? reflectCoefficient : 0);
+    * pow(reflectCoefficient, sr.shininess);
 }
