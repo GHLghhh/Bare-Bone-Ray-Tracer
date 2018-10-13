@@ -24,6 +24,7 @@ public:
 
   double Length();
   double KNorm(int k);
+  Vec3 Unit();
 
   double x;
   double y;

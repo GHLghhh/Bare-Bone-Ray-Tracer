@@ -4,7 +4,7 @@
 Plane::Plane(Vec3 position, Vec3 normal, RGBColor color)
   : GeometricObject(position, color)
 {
-  normal_ = normal / normal.Length();
+  normal_ = normal.Unit();
 }
 
 bool Plane::Hit(const Ray& ray, double& tMin, ShadeRec& sr)
