@@ -9,7 +9,7 @@ Light::Light(Vec3 spacialParameter, RGBColor color, bool shadow)
 
 DirectionalLight::DirectionalLight(
   Vec3 lightDirection, RGBColor color, bool shadow)
-  : Light(lightDirection / lightDirection.Length(), color, shadow)
+  : Light(lightDirection.Unit(), color, shadow)
 {
 }
 
@@ -25,5 +25,5 @@ PointLight::PointLight(Vec3 lightPosition, RGBColor color, bool shadow)
 
 Vec3 PointLight::ToLightDirection(const Vec3& hitPoint) const
 {
-  return (param_ - hitPoint);
+  return (param_ - hitPoint).Unit();
 }

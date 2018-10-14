@@ -27,6 +27,11 @@ Vec3::Vec3(const Vec3& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), length(rhs.length)
 {
 }
 
+Vec3 Vec3::Unit()
+{
+  return *this / this->Length();
+}
+
 Vec3& Vec3::operator=(const Vec3& rhs)
 {
     x = rhs.x;

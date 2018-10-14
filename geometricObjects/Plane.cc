@@ -4,7 +4,7 @@
 Plane::Plane(Vec3 position, Vec3 normal, RGBColor color)
   : GeometricObject(position, color)
 {
-  normal_ = normal / normal.Length();
+  normal_ = normal.Unit();
 }
 
 bool Plane::Hit(const Ray& ray, double& tMin, ShadeRec& sr)
@@ -13,10 +13,14 @@ bool Plane::Hit(const Ray& ray, double& tMin, ShadeRec& sr)
     / Vec3::Dot(ray.Direction(), normal_);
   if (t > kEPSILON) {
     tMin = t;
-    sr.normal = normal_;
-    sr.color = color_;
-    sr.hitPosition = ray.Position() + ray.Direction() * t;
+    FillShadeRec(ray, t, sr);
     return true;
   }
   return false;
+}
+
+void Plane::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
+{
+  GeometricObject::FillShadeRec(ray, t, sr);
+  sr.normal = normal_;
 }
