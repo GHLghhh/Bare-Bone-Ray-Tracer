@@ -70,6 +70,7 @@ int main() {
   res = world.Render();
   ToPNG("outs/multiJittering.png", res);
 
+  // [TODO] check if orthographic camera is shaded correctly.
   world.SetCamera(&cameraO);
   res = world.Render();
   ToPNG("outs/orthographic.png", res);
