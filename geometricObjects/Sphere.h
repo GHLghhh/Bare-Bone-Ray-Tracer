@@ -9,5 +9,6 @@ public:
   ~Sphere() = default;
   bool Hit(const Ray& ray, double& t, ShadeRec& s) override;
 private:
+  void FillShadeRec(const Ray& ray, const double t, ShadeRec& sr) override;
   double radius_;
 };
