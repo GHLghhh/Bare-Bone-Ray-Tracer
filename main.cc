@@ -45,6 +45,7 @@ int main() {
   MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
 
   PointLight light(Vec3(0, 10, 1), Vec3(0.5, 1.0, 1.0));
+  PointLight light2(Vec3(10, 0, 1), Vec3(1.0, 0.5, 0.5));
   Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
     RGBColor(0.0,1.0,0.0));
   Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
@@ -55,6 +56,7 @@ int main() {
 
   world.SetViewPlane(&viewPlane);
   world.AddLightSource(&light);
+  world.AddLightSource(&light2);
   world.AddGeometricObject(&triangle1);
   world.AddGeometricObject(&triangle2);
   world.AddGeometricObject(&sphere1);
@@ -70,6 +72,7 @@ int main() {
   res = world.Render();
   ToPNG("outs/multiJittering.png", res);
 
+  // [TODO] check if orthographic camera is shaded correctly.
   world.SetCamera(&cameraO);
   res = world.Render();
   ToPNG("outs/orthographic.png", res);
