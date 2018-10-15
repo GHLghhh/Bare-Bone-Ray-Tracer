@@ -37,7 +37,7 @@ int main() {
 
   World world = World();
 
-  Vec3 cp = Vec3(0,0,2);
+  Vec3 cp = Vec3(0,0,5);
   Vec3 la = Vec3(0,0,-1);
   Vec3 up = Vec3(0,1,0);
   PerspectiveCamera cameraP(cp, la, up, 2);
@@ -49,23 +49,28 @@ int main() {
   Sampler2D sampler = Sampler2D();
   MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
 
-  PointLight light(Vec3(5, 10, 1), Vec3(0.5, 1.0, 1.0));
-  PointLight light2(Vec3(10, 0, 1), Vec3(1.0, 0.5, 0.5));
-  Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
-    RGBColor(0.0,1.0,0.0));
-  Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
-    RGBColor(1.0,0.0,0.5));
+  PointLight light(Vec3(5, 10, 5), Vec3(0.5, 1.0, 1.0));
+  PointLight light2(Vec3(10, 0, 5), Vec3(1.0, 0.5, 0.5));
+  // Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
+  //   RGBColor(0.0,1.0,0.0));
+  // Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
+  //   RGBColor(1.0,0.0,0.5));
 
-  Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
-  Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
+  // Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
+  // Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
 
   world.SetViewPlane(&viewPlane);
   world.AddLightSource(&light);
   world.AddLightSource(&light2);
-  world.AddGeometricObject(&triangle1);
-  world.AddGeometricObject(&triangle2);
-  world.AddGeometricObject(&sphere1);
-  world.AddGeometricObject(&sphere2);
+  // world.AddGeometricObject(&triangle1);
+  // world.AddGeometricObject(&triangle2);
+  // world.AddGeometricObject(&sphere1);
+  // world.AddGeometricObject(&sphere2);
+
+  for (size_t i = 0; i < meshes.size(); i++) {
+    world.AddGeometricObject(&meshes[i]);
+  }
+  std::cout << "Finished adding meshes" << std::endl;
 
   world.SetCamera(&cameraP);
   world.SetSampler(&sampler);

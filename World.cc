@@ -43,6 +43,7 @@ Scene World::Render()
     return res;
   }
   PixelRays pixelRays = cameraPtr_->CastRays(*samplerPtr_, *viewPlanePtr_);
+  size_t totalPixel = pixelRays.size();
   for (auto& pixelsInRow : pixelRays) {
       res.push_back(std::vector<RGBColor>());
       for (auto& pixelsInRowColumn : pixelsInRow) {
@@ -92,6 +93,7 @@ Scene World::Render()
           }
           res.back().push_back(resColor / pixelsInRowColumn.size());
       }
+      std::cout << "Rendering current scene: " << res.size() << "/" << totalPixel << std::endl;
   }
   return res;
 }
