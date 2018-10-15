@@ -45,3 +45,9 @@ void Triangle::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
   double a = a0 + a1 + a2;
   sr.normal = (pointNormal0_ * (a0 / a) + pointNormal1_ * (a1 / a) + pointNormal2_ * (a2 / a)).Unit();
 }
+
+std::ostream& operator<< (std::ostream& out, const Triangle& obj)
+{
+    out << "[" << obj.point0_ << " " << obj.point1_ << " " << obj.point2_ << "]";
+    return out;
+}

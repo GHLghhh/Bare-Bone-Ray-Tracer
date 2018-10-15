@@ -6,6 +6,7 @@
 #include "utils/Vec3.h"
 #include "utils/RGBColor.h"
 #include "utils/ShadeRec.h"
+#include "utils/io/loadMeshes.h"
 #include "World.h"
 #include "samplers/MultiJitteredSampler2D.h"
 
@@ -30,6 +31,10 @@ void ToPNG(const std::string& filename, const Scene& scene)
 }
 
 int main() {
+  std::vector<Triangle> meshes = LoadFromObjFile("test.obj");
+  std::cout << meshes.size() << std::endl;
+  std::cout << "End loading meshes" << std::endl;
+
   World world = World();
 
   Vec3 cp = Vec3(0,0,2);

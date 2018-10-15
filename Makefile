@@ -22,7 +22,8 @@ SHADERS_OBJS	:=	$(addprefix $(BUILDDIR)/shaders/, $(SHADERS_SRCS:%.cc=%.o))
 
 UTILS_SRCS	:=	RGBColor.cc \
 				ShadeRec.cc \
-				Vec3.cc
+				Vec3.cc \
+				io/loadMeshes.cc
 UTILS_OBJS	:=	$(addprefix $(BUILDDIR)/utils/, $(UTILS_SRCS:%.cc=%.o))
 
 CORE_SRCS	:=	Camera.cc \
