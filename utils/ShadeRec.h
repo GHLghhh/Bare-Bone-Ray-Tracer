@@ -9,6 +9,8 @@ public:
   // [TODO] put eye position for shaidng here?
   ShadeRec(const Vec3& eyePosition);
 
+  ShadeRec& operator= (const ShadeRec& rhs);
+
   RGBColor color;
   Vec3 normal;
   Vec3 hitPosition;

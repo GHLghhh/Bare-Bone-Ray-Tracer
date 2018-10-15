@@ -5,6 +5,7 @@
 #include "Light.h"
 #include "samplers/Sampler2D.h"
 #include "geometricObjects/GeometricObject.h"
+#include "GeometricLayout.h"
 
 using Scene = std::vector<std::vector<RGBColor>>;
 
@@ -18,6 +19,7 @@ public:
   void SetCamera(Camera* objPtr);
   void SetViewPlane(ViewPlane* objPtr);
   void SetSampler(Sampler2D* objPtr);
+  void SetGeometricLayoutType(LayoutType type);
 
   void AddGeometricObject(GeometricObject* objPtr);
   void AddLightSource(Light* objPtr);
@@ -29,5 +31,5 @@ private:
   ViewPlane* viewPlanePtr_;
   Sampler2D* samplerPtr_;
   std::vector<Light*> lights_;
-  std::vector<GeometricObject*> geometricObjects_;
+  GeometricLayout geometricLayout_;
 };

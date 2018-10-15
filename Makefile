@@ -32,7 +32,8 @@ CORE_SRCS	:=	Camera.cc \
 				Object.cc \
 				Ray.cc \
 				ViewPlane.cc \
-				World.cc 
+				World.cc \
+				GeometricLayout.cc
 CORE_OBJS	:=	$(addprefix $(BUILDDIR)/, $(CORE_SRCS:%.cc=%.o))
 
 .PHONY: all clean
