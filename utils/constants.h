@@ -1,3 +1,3 @@
 #pragma once
 
-const double kEPSILON = 0.00000000000000000000000001;
+const double kEPSILON = 0.0000001;

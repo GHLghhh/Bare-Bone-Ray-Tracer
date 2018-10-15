@@ -10,6 +10,7 @@ public:
   RGBColor(const Vec3& rhs);
   RGBColor To8Bit() const;
   RGBColor MaxToOne() const;
+  RGBColor ClipToOne() const;
 private:
   RGBColor(int red, int green, int blue);
 };

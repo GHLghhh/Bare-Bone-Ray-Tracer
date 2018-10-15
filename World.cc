@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "shaders/Shader.h"
+#include "utils/constants.h"
 
 World::World() : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr)
 {
@@ -51,7 +52,7 @@ Scene World::Render()
               double t = -1;
               ShadeRec sr;
               for (GeometricObject* objPtr : geometricObjects_) {
-                  double tTemp;
+                  double tTemp = t;
                   ShadeRec srTemp(cameraPtr_->Position());
                   // Hit
                   if (objPtr->Hit(ray, tTemp, srTemp)) {
@@ -68,8 +69,24 @@ Scene World::Render()
               } else {
                 // [TODO] ambient component and wrap everything into a shading model?
                 for (Light* light : lights_) {
-                  resColor += Shader::Diffuse(sr, *light);
-                  resColor += Shader::Specular(sr, *light);
+                  bool blocked = false;
+                  double toLightTime = light->ToLightTime(sr.hitPosition);
+                  for (GeometricObject* objPtr : geometricObjects_) {
+                    double tTemp = -1;
+                    ShadeRec srTemp;
+                    Ray shadowRay(sr.hitPosition, light->ToLightDirection(sr.hitPosition));
+                    if (objPtr->Hit(shadowRay, tTemp, srTemp)) {
+                      // Check if the hit is valid
+                      blocked = (tTemp > kEPSILON && (tTemp < toLightTime || toLightTime == -1));
+                    }
+                    if (blocked) {
+                      break;
+                    }
+                  }
+                  if (!blocked) {
+                    resColor += Shader::Diffuse(sr, *light);
+                    resColor += Shader::Specular(sr, *light);
+                  }
                 }
               } 
           }

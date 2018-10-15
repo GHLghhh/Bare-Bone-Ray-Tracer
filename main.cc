@@ -44,7 +44,7 @@ int main() {
   Sampler2D sampler = Sampler2D();
   MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
 
-  PointLight light(Vec3(0, 10, 1), Vec3(0.5, 1.0, 1.0));
+  PointLight light(Vec3(5, 10, 1), Vec3(0.5, 1.0, 1.0));
   PointLight light2(Vec3(10, 0, 1), Vec3(1.0, 0.5, 0.5));
   Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
     RGBColor(0.0,1.0,0.0));

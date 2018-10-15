@@ -3,7 +3,7 @@
 Ray::Ray(Vec3 position, Vec3 direction)
 {
   position_ = position;
-  direction_ = direction / direction.Length();
+  direction_ = direction.Unit();
 }
 
 Vec3 Ray::PointAt(const double t) const

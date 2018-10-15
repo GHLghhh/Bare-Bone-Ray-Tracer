@@ -38,3 +38,8 @@ RGBColor RGBColor::MaxToOne() const
   double max_color = (x > y) ? (x > z ? x : z) : (y > z ? y : z);
   return max_color > 1 ? RGBColor(x / max_color, y / max_color, z / max_color) : *this;
 }
+
+RGBColor RGBColor::ClipToOne() const
+{
+  return RGBColor(x, y, z);
+}
