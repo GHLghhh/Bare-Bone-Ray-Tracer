@@ -19,6 +19,7 @@ public:
   Vec3 operator* (const Vec3& rhs) const;
   Vec3 operator- (const Vec3& rhs) const;
   Vec3 operator+ (const Vec3& rhs) const;
+  bool operator== (const Vec3& rhs);
 
   friend std::ostream& operator<< (std::ostream& out, const Vec3& obj); 
 

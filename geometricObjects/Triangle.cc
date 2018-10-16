@@ -11,7 +11,14 @@ Triangle::Triangle(Vec3 point0, Vec3 point1, Vec3 point2, RGBColor color)
   pointNormal0_ = normal_;
   pointNormal1_ = normal_;
   pointNormal2_ = normal_;
-  
+  // [TODO] use max/min to simplfy operation
+  // [TODO] iterate x, y, z instead of direct access via x, y, z
+  boundingBox_.first.x = std::min(std::min(point0_.x, point1_.x), point2_.x);
+  boundingBox_.first.y = std::min(std::min(point0_.y, point1_.y), point2_.y);
+  boundingBox_.first.z = std::min(std::min(point0_.z, point1_.z), point2_.z);
+  boundingBox_.second.x = std::max(std::max(point0_.x, point1_.x), point2_.x);
+  boundingBox_.second.y = std::max(std::max(point0_.y, point1_.y), point2_.y);
+  boundingBox_.second.z = std::max(std::max(point0_.z, point1_.z), point2_.z);
 }
 
 bool Triangle::Hit(const Ray& ray, double& tMin, ShadeRec& sr)

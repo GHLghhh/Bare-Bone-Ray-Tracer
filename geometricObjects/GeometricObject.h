@@ -5,6 +5,7 @@
 #include "../utils/ShadeRec.h"
 #include "../Ray.h"
 
+// <minPosition, maxPosition>
 using BBox = std::pair<Vec3, Vec3>;
 
 class GeometricObject : public Object {

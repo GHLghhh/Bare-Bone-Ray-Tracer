@@ -7,7 +7,12 @@
 World::World()
   : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr)
 {
-  geometricLayout_ = GeometricLayout();
+  geometricLayoutPtr_ = new GeometricLayout();
+}
+
+World::~World()
+{
+  delete geometricLayoutPtr_;
 }
 
 void World::SetCamera(Camera* objPtr)
@@ -28,12 +33,20 @@ void World::SetSampler(Sampler2D* objPtr)
 // [TODO] hide the layout creation
 void World::SetGeometricLayoutType(LayoutType type)
 {
-  GeometricLayout old = geometricLayout_;
+  GeometricLayout* old = geometricLayoutPtr_;
   switch (type) {
     case LayoutType::LIST:
       {
-        geometricLayout_ = GeometricLayout();
-        geometricLayout_.TransferFrom(old);
+        geometricLayoutPtr_ = new GeometricLayout();
+        geometricLayoutPtr_->TransferFrom(*old);
+        //delete old;
+      }
+      break;
+    case LayoutType::GRID:
+      {
+        geometricLayoutPtr_ = new GridLayout();
+        geometricLayoutPtr_->TransferFrom(*old);
+        //delete old;
       }
       break;
     default:
@@ -45,7 +58,12 @@ void World::SetGeometricLayoutType(LayoutType type)
 
 void World::AddGeometricObject(GeometricObject* objPtr)
 {
-  geometricLayout_.AddObject(objPtr);
+  geometricLayoutPtr_->AddObject(objPtr);
+}
+
+void World::DiscardGeometricObjects()
+{
+  geometricLayoutPtr_->DeleteObjects();
 }
 
 void World::AddLightSource(Light* objPtr)
@@ -72,7 +90,7 @@ Scene World::Render()
         for (Ray& ray : pixelsInRowColumn) {
             double t = -1;
             ShadeRec sr(cameraPtr_->Position());
-            bool isHit = geometricLayout_.Hit(ray, t, sr);
+            bool isHit = geometricLayoutPtr_->Hit(ray, t, sr);
             // No hit, use background color for this sample
             if (!isHit) {
               resColor += backGroundColor;
@@ -84,7 +102,7 @@ Scene World::Render()
                 ShadeRec srTemp;
                 Ray shadowRay(sr.hitPosition, light->ToLightDirection(sr.hitPosition));
 
-                bool isBlocked = geometricLayout_.Hit(
+                bool isBlocked = geometricLayoutPtr_->Hit(
                   shadowRay, tTemp, srTemp, true, toLightTime);
                 if (!isBlocked) {
                   resColor += Shader::Diffuse(sr, *light);
@@ -95,7 +113,9 @@ Scene World::Render()
         }
         res.back().push_back(resColor / pixelsInRowColumn.size());
     }
-    std::cout << "Rendering current scene: " << res.size() << "/" << totalPixel << std::endl;
+    if (res.size() % (totalPixel / 10) == 0) {
+      std::cout << "Rendering current scene: " << res.size() << "/" << totalPixel << std::endl;
+    }
   }
   return res;
 }

@@ -12,7 +12,7 @@ using Scene = std::vector<std::vector<RGBColor>>;
 class World {
 public:
   World();
-  ~World() = default;
+  ~World();
 
   // [TODO] find a better way to manage objects
   // want main to be free of storing temporary objects
@@ -22,6 +22,7 @@ public:
   void SetGeometricLayoutType(LayoutType type);
 
   void AddGeometricObject(GeometricObject* objPtr);
+  void DiscardGeometricObjects();
   void AddLightSource(Light* objPtr);
 
   Scene Render();
@@ -31,5 +32,5 @@ private:
   ViewPlane* viewPlanePtr_;
   Sampler2D* samplerPtr_;
   std::vector<Light*> lights_;
-  GeometricLayout geometricLayout_;
+  GeometricLayout* geometricLayoutPtr_;
 };

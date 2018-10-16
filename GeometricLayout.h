@@ -5,10 +5,12 @@
 #include "utils/ShadeRec.h"
 #include "Ray.h"
 #include <vector>
+#include <tuple>
 #include <unordered_map>
 
 enum LayoutType {
-  LIST
+  LIST,
+  GRID
 };
 
 class GeometricLayout {
@@ -21,13 +23,15 @@ public:
 
   // [TODO] make it more general, something like nested layout
   void AddObject(GeometricObject* objPtr);
+  void DeleteObjects();
 
 protected:
   // Update implicitly
   virtual void UpdateLayout();
-  // [TODO] BBox only used in actual accelerating structure
-  // BBox layoutBoundingBox_;
+  void ExtendLayoutBBox(const BBox& objBBox);
+
   bool layoutUpdated;
+  BBox layoutBoundingBox_;
   std::vector<GeometricObject*> geometricObjects_;
 };
 
@@ -36,9 +40,16 @@ public:
   GridLayout();
   bool Hit(
     const Ray& ray, double& t, ShadeRec& sr,
-    bool earlyStopping = false, double stopT = -1);
+    bool earlyStopping = false, double stopT = -1) override;
 private:
-  void UpdateLayout();
-  BBox layoutBoundingBox_;
-  std::unordered_map<uintptr_t, std::vector<GeometricObject*>> grids;
+  void UpdateLayout() override;
+  bool HitOutlier(const Ray& ray, double& t, ShadeRec& sr);
+  Vec3 CalculateFRatio(const Vec3& position);
+  std::unordered_map<uint64_t, std::vector<GeometricObject*>> grids_;
+  std::vector<std::vector<GeometricObject*>> gridList;
+  std::vector<GeometricObject*> outliers_;
+  Vec3 w_;
+  Vec3 n_;
 };
+
+uint64_t MortonCode(uint i, uint j, uint k);
