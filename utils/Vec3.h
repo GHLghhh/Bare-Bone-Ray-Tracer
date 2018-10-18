@@ -20,6 +20,8 @@ public:
   Vec3 operator- (const Vec3& rhs) const;
   Vec3 operator+ (const Vec3& rhs) const;
   bool operator== (const Vec3& rhs);
+  double& operator[](const int index);
+  const double operator[](const int index) const;
 
   friend std::ostream& operator<< (std::ostream& out, const Vec3& obj); 
 

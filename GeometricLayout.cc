@@ -1,5 +1,6 @@
 #include "GeometricLayout.h"
 #include "utils/constants.h"
+#include "utils/utils.h"
 #include <math.h>
 #include <iostream>
 
@@ -64,25 +65,16 @@ void GeometricLayout::UpdateLayout()
 
 void GeometricLayout::ExtendLayoutBBox(const BBox& objBBox)
 {
-  layoutBoundingBox_.first.x =
-    (layoutBoundingBox_.first.x < objBBox.first.x) ?
-      layoutBoundingBox_.first.x : objBBox.first.x;
-  layoutBoundingBox_.first.y =
-    (layoutBoundingBox_.first.y < objBBox.first.y) ?
-      layoutBoundingBox_.first.y : objBBox.first.y;
-  layoutBoundingBox_.first.z =
-    (layoutBoundingBox_.first.z < objBBox.first.z) ?
-      layoutBoundingBox_.first.z : objBBox.first.z;
+  Vec3& smallLocation = std::get<0>(layoutBoundingBox_);
+  const Vec3& newSmall = std::get<0>(objBBox);
   
-  layoutBoundingBox_.second.x =
-    (layoutBoundingBox_.second.x > objBBox.second.x) ?
-      layoutBoundingBox_.second.x : objBBox.second.x;
-  layoutBoundingBox_.second.y =
-    (layoutBoundingBox_.second.y > objBBox.second.y) ?
-      layoutBoundingBox_.second.y : objBBox.second.y;
-  layoutBoundingBox_.second.z =
-    (layoutBoundingBox_.second.z > objBBox.second.z) ?
-      layoutBoundingBox_.second.z : objBBox.second.z;
+  Vec3& largeLocation = std::get<1>(layoutBoundingBox_);
+  const Vec3& newLarge = std::get<1>(objBBox);
+  for (size_t idx = 0; idx < 3; idx++) {
+    // smaller location
+    smallLocation[idx] = (smallLocation[idx] < newSmall[idx]) ? smallLocation[idx] : newSmall[idx];
+    largeLocation[idx] = (largeLocation[idx] > newLarge[idx]) ? largeLocation[idx] : newLarge[idx];
+  }
 }
 
 GridLayout::GridLayout()
@@ -212,14 +204,14 @@ void GridLayout::UpdateLayout()
   if (!layoutUpdated) {
     // std::cout << "Update in grid" << std::endl;
     // Recalculate bounding box and find outlier
-    layoutBoundingBox_ = BBox(Vec3(0.0, 0.0, 0.0), Vec3(0.0, 0.0, 0.0));
+    layoutBoundingBox_ = std::make_pair(Vec3(0.0, 0.0, 0.0), Vec3(0.0, 0.0, 0.0));
     grids_.clear();
     gridList.clear();
     outliers_.clear();
     if (geometricObjects_.size() == 0) {
       return;
     }
-    layoutBoundingBox_ = BBox(geometricObjects_[0]->boundingBox_.first, geometricObjects_[0]->boundingBox_.second);
+    layoutBoundingBox_ = std::make_pair(geometricObjects_[0]->boundingBox_.first, geometricObjects_[0]->boundingBox_.second);
     for (auto& objPtr : geometricObjects_) {
       // outlier
       if (objPtr->boundingBox_.first == objPtr->boundingBox_.second) {
@@ -230,12 +222,10 @@ void GridLayout::UpdateLayout()
     }
 
     if (!(layoutBoundingBox_.first == layoutBoundingBox_.second)) {
-      layoutBoundingBox_.first.x -= kEPSILON;
-      layoutBoundingBox_.first.y -= kEPSILON;
-      layoutBoundingBox_.first.z -= kEPSILON;
-      layoutBoundingBox_.second.x += kEPSILON;
-      layoutBoundingBox_.second.y += kEPSILON;
-      layoutBoundingBox_.second.z += kEPSILON;
+      for (int i = 0; i < 3; i++) {
+        layoutBoundingBox_.first[i] -= kEPSILON;
+        layoutBoundingBox_.second[i] += kEPSILON;
+      }
 
       // calculate grid information
       // [TODO] make it a function? make 'm' a parameter
@@ -266,7 +256,7 @@ void GridLayout::UpdateLayout()
               for (int k = (int)minIdx.z; k <= (int)maxIdx.z; k++) {
                 //std::cout << i << "," << j << "," << k << std::endl;
                 gridList[i * n_y * n_z + j * n_z + k].push_back(objPtr);
-                // uint64_t idx = MortonCode(i, j, k);
+                // uint64_t idx = MortonCode({i, j, k});
                 // auto itr = grids_.find(idx);
                 // if (itr == grids_.end()) {
                 //   grids_.emplace(idx, std::vector<GeometricObject*>(1, objPtr));
@@ -306,18 +296,4 @@ Vec3 GridLayout::CalculateFRatio(const Vec3& position)
     (int)((position.x - layoutBoundingBox_.first.x - kEPSILON) / w_.x * n_.x),
     (int)((position.y - layoutBoundingBox_.first.y - kEPSILON) / w_.y * n_.y),
     (int)((position.z - layoutBoundingBox_.first.z - kEPSILON) / w_.z * n_.z));
-}
-
-uint64_t MortonCode(uint i, uint j, uint k)
-{
-  int64_t res = 0;
-  uint shift = 0;
-  for (int idx = 0; idx < 64; idx++) {
-    int val = ((idx % 3) == 0) ? i : (((idx % 3) == 1) ? j : k);
-    res = res | ((val & 1) << shift);
-    if ((idx % 3) == 2) {
-      shift++;
-    }
-  }
-  return res;
 }

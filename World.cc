@@ -88,32 +88,32 @@ Scene World::Render()
         // Get proper color for each sample for the pixel and take average
         RGBColor resColor(0.0, 0.0, 0.0);
         for (Ray& ray : pixelsInRowColumn) {
-            double t = -1;
-            ShadeRec sr(cameraPtr_->Position());
-            bool isHit = geometricLayoutPtr_->Hit(ray, t, sr);
-            // No hit, use background color for this sample
-            if (!isHit) {
-              resColor += backGroundColor;
-            } else {
-              // [TODO] ambient component and wrap everything into a shading model?
-              for (Light* light : lights_) {
-                double toLightTime = light->ToLightTime(sr.hitPosition);
-                double tTemp = -1;
-                ShadeRec srTemp;
-                Ray shadowRay(sr.hitPosition, light->ToLightDirection(sr.hitPosition));
+          double t = -1;
+          ShadeRec sr(cameraPtr_->Position());
+          bool isHit = geometricLayoutPtr_->Hit(ray, t, sr);
+          // No hit, use background color for this sample
+          if (!isHit) {
+            resColor += backGroundColor;
+          } else {
+            // [TODO] ambient component and wrap everything into a shading model?
+            for (Light* light : lights_) {
+              double toLightTime = light->ToLightTime(sr.hitPosition);
+              double tTemp = -1;
+              ShadeRec srTemp;
+              Ray shadowRay(sr.hitPosition, light->ToLightDirection(sr.hitPosition));
 
-                bool isBlocked = geometricLayoutPtr_->Hit(
-                  shadowRay, tTemp, srTemp, true, toLightTime);
-                if (!isBlocked) {
-                  resColor += Shader::Diffuse(sr, *light);
-                  resColor += Shader::Specular(sr, *light);
-                }
+              bool isBlocked = geometricLayoutPtr_->Hit(
+                shadowRay, tTemp, srTemp, true, toLightTime);
+              if (!isBlocked) {
+                resColor += Shader::Diffuse(sr, *light);
+                resColor += Shader::Specular(sr, *light);
               }
-            } 
+            }
+          }
         }
         res.back().push_back(resColor / pixelsInRowColumn.size());
     }
-    if (res.size() % (totalPixel / 10) == 0) {
+    if (res.size() % (std::max((int)(totalPixel / 10),1)) == 0) {
       std::cout << "Rendering current scene: " << res.size() << "/" << totalPixel << std::endl;
     }
   }

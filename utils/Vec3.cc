@@ -91,6 +91,34 @@ bool Vec3::operator==(const Vec3& rhs)
   return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z));
 }
 
+double& Vec3::operator[](const int index)
+{
+  switch (index) {
+    case 0:
+      return x;
+    case 1:
+      return y;
+    case 2:
+      return z;
+    default:
+      return x;
+  }
+}
+
+const double Vec3::operator[](const int index) const
+{
+  switch (index) {
+    case 0:
+      return x;
+    case 1:
+      return y;
+    case 2:
+      return z;
+    default:
+      return x;
+  }
+}
+
 double Vec3::Length()
 {
   if (length == -1) {
