@@ -39,19 +39,20 @@ int main() {
   World world = World();
 
   if (DEBUG) {
+    std::cout << "Initializing world setting" << std::endl;
     Vec3 cp(0,0, 2);
     Vec3 la(0,0,-1);
     Vec3 up(0,1,0);
 
     PerspectiveCamera cameraP(cp, la, up, 2);
     OrthographicCamera cameraO(cp, la, up);
-
     PointLight light(Vec3(5, 10, 0), RGBColor(0.5, 1.0, 1.0));
     PointLight light2(Vec3(10, 0, 5), RGBColor(1.0, 0.5, 0.5));
 
     Sampler2D sampler = Sampler2D();
     ViewPlane viewPlane(0.01,0.01,108,96);
-    
+
+    std::cout << "Applying world setting" << std::endl;
     world.SetGeometricLayoutType(LayoutType::GRID);
     world.SetViewPlane(&viewPlane);
     world.SetSampler(&sampler);
@@ -59,6 +60,7 @@ int main() {
     world.AddLightSource(&light2);
 
     /* Testing set */
+    std::cout << "Creating geometric objects" << std::endl;
     Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
       RGBColor(0.0,1.0,0.0));
     Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
@@ -66,16 +68,15 @@ int main() {
 
     Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
     Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
-    Sphere sphere3(Vec3(-0.0269652,0.795313,-1.81842), 1.0, RGBColor(1.0,0.5,1.0));
     
-
+    std::cout << "Adding geometric objects" << std::endl;
     world.AddGeometricObject(&triangle1);
     world.AddGeometricObject(&triangle2);
     world.AddGeometricObject(&sphere1);
     world.AddGeometricObject(&sphere2);
-    // world.AddGeometricObject(&sphere3);
 
     // // [TODO] check if orthographic camera is shaded correctly.
+    std::cout << "Rendering orthographic scene" << std::endl;
     world.SetCamera(&cameraO);
     time_t start = time(0);
     Scene res = world.Render();
@@ -83,6 +84,7 @@ int main() {
     ToPNG("outs/orthographic.png", res);
     std::cout << "Rendered orthographic in " << seconds << " seconds"<< std::endl;
 
+    std::cout << "Rendering perspective scene" << std::endl;
     world.SetCamera(&cameraP);
     start = time(0);
     res = world.Render();
@@ -90,6 +92,7 @@ int main() {
     seconds = difftime(time(0), start);
     std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;
   } else {
+    std::cout << "Initializing world setting" << std::endl;
     Vec3 cp = Vec3(0,0, 2);
     Vec3 la = Vec3(0,0,-1);
     Vec3 up = Vec3(0,1,0);
@@ -109,6 +112,7 @@ int main() {
 
     MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
 
+    std::cout << "Applying world setting" << std::endl;
     world.SetGeometricLayoutType(LayoutType::GRID);
     world.SetViewPlane(&viewPlane);
     world.SetSampler(&samplerM);
@@ -117,6 +121,7 @@ int main() {
     world.AddLightSource(&light2);
 
     /* Generate spheres with different order of magnitude */
+    std::cout << "Creating geometric objects" << std::endl;
     std::vector<Sphere> spheres;
     for (int i = 0; i < 10000; i++) {
       Vec3 randomPosition = Vec3(((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) + 0.3) * -20);
@@ -129,6 +134,7 @@ int main() {
     for (int i = 0; i < spheres.size(); i++) {
       world.AddGeometricObject(&spheres[i]);
       if (i == 99) {
+        std::cout << "Rendering 100 sphere with grid" << std::endl;
         time_t start = time(0);
         Scene res = world.Render();
         double seconds = difftime(time(0), start);
@@ -136,6 +142,7 @@ int main() {
         std::cout << "Finished 1h balls with grid in " << seconds << std::endl;
       }
       if (i == 999) {
+        std::cout << "Rendering 1000 sphere with grid" << std::endl;
         time_t start = time(0);
         Scene res = world.Render();
         double seconds = difftime(time(0), start);
@@ -143,6 +150,7 @@ int main() {
         std::cout << "Finished 1k balls with grid in " << seconds << std::endl;
       }
       if (i == 9999) {
+        std::cout << "Rendering 10000 sphere with grid" << std::endl;
         time_t start = time(0);
         Scene res = world.Render();
         double seconds = difftime(time(0), start);
@@ -157,6 +165,7 @@ int main() {
     for (int i = 0; i < spheres.size(); i++) {
       world.AddGeometricObject(&spheres[i]);
       if (i == 99) {
+        std::cout << "Rendering 100 sphere with list" << std::endl;
         time_t start = time(0);
         Scene res = world.Render();
         double seconds = difftime(time(0), start);
@@ -164,6 +173,7 @@ int main() {
         std::cout << "Finished 1h balls with list in " << seconds << std::endl;
       }
       if (i == 999) {
+        std::cout << "Rendering 1000 sphere with list" << std::endl;
         time_t start = time(0);
         Scene res = world.Render();
         double seconds = difftime(time(0), start);
@@ -171,6 +181,7 @@ int main() {
         std::cout << "Finished 1k balls with list in " << seconds << std::endl;
       }
       if (i == 9999) {
+        std::cout << "Rendering 10000 sphere with list" << std::endl;
         time_t start = time(0);
         Scene res = world.Render();
         double seconds = difftime(time(0), start);
@@ -180,10 +191,12 @@ int main() {
     }
 
     /* Setup for mesh */
+    std::cout << "Loading geometric objects from obj file" << std::endl;
     std::vector<Triangle> meshes = LoadFromObjFile("teapot.obj");
     std::cout << meshes.size() << std::endl;
     std::cout << "End loading meshes" << std::endl;
 
+    std::cout << "Adding geometric objects" << std::endl;
     world.DiscardGeometricObjects();
     for (size_t i = 0; i < meshes.size(); i++) {
       world.AddGeometricObject(&meshes[i]);
@@ -192,8 +205,9 @@ int main() {
 
     world.SetCamera(&cameraPMesh);
     world.AddLightSource(&light3);
-    time_t start = time(0);
 
+    std::cout << "Rendering teapot with list" << std::endl;
+    time_t start = time(0);
     Scene res = world.Render();
     double seconds = difftime(time(0), start);
     ToPNG("outs/teapot_list.png", res);
@@ -201,6 +215,7 @@ int main() {
 
     world.SetGeometricLayoutType(LayoutType::GRID);
 
+    std::cout << "Rendering teapot with grid" << std::endl;
     start = time(0);
     res = world.Render();
     seconds = difftime(time(0), start);

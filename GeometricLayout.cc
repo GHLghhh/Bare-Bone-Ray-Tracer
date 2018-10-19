@@ -54,7 +54,6 @@ bool GeometricLayout::Hit(
 
 void GeometricLayout::UpdateLayout()
 {
-  //std::cout << "update in plain" << std::endl;
   if (!layoutUpdated) {
     // Update layout here since geometric objects are changed
     layoutUpdated = true;
@@ -151,16 +150,10 @@ bool GridLayout::Hit(
         nextT.y = initT + ((startIdx.y + (int)directionSign.y) / n_.y * w_.y + layoutBoundingBox_.first.y - hitPoint.y) * invDirection.y;
         nextT.z = initT + ((startIdx.z + (int)directionSign.z) / n_.z * w_.z + layoutBoundingBox_.first.z - hitPoint.z) * invDirection.z;
       }
-      //std::cout << std::endl << n_ << " : " << w_ << " : " << nextT << std::endl;
       // traverse grid
       while ((int)startIdx.x < (int)n_.x && (int)startIdx.y < (int)n_.y && (int)startIdx.z < (int)n_.z
         && (int)startIdx.x >= 0 && (int)startIdx.y >= 0 && (int)startIdx.z >= 0) {
-        // uint64_t idx = MortonCode((uint)startIdx.x, (uint)startIdx.y, (uint)startIdx.z);
-        // auto itr = grids_.find(idx);
-        //if (itr != grids_.end()) {
-        //std::cout <<  "  " << startIdx; 
         if (gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z].size() != 0) {
-          //std::cout << "  " << gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z].size();
           for (auto& objPtr : gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z]) {
             double tTemp = t;
             ShadeRec srTemp(sr.eyePosition);
@@ -195,7 +188,6 @@ bool GridLayout::Hit(
           nextT.z += deltaT.z;
           startIdx.z += (directionSign.z != 1.0) ? -1 : 1;
         }
-        //std::cout << "Here with " << startIdx << std::endl;
       }
     }
   }
@@ -256,15 +248,8 @@ void GridLayout::UpdateLayout()
           for (int i = (int)minIdx.x; i <= (int)maxIdx.x; i++) {
             for (int j = (int)minIdx.y; j <= (int)maxIdx.y; j++) {
               for (int k = (int)minIdx.z; k <= (int)maxIdx.z; k++) {
-                //std::cout << i << "," << j << "," << k << std::endl;
+                // [TODO] use hash + Morton code for storage
                 gridList[i * n_y * n_z + j * n_z + k].push_back(objPtr);
-                // uint64_t idx = MortonCode({i, j, k});
-                // auto itr = grids_.find(idx);
-                // if (itr == grids_.end()) {
-                //   grids_.emplace(idx, std::vector<GeometricObject*>(1, objPtr));
-                // } else {
-                //   itr->second.push_back(objPtr);
-                // }
               }
             }
           }

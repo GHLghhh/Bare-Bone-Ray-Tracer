@@ -39,7 +39,6 @@ void World::SetSampler(Sampler2D* objPtr)
   samplerPtr_ = objPtr;
 }
 
-// [TODO] hide the layout creation
 void World::SetGeometricLayoutType(LayoutType type)
 {
   ConvertFromExistingLayout(type, geometricLayoutPtr_->GetObjects());
@@ -81,7 +80,6 @@ void World::AddLightSource(Light* objPtr)
   lights_.push_back(objPtr);
 }
 
-// [TODO] normalize color range in returning "Scene"
 Scene World::Render()
 {
   Scene res;
