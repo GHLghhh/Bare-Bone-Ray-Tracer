@@ -113,26 +113,20 @@ bool GridLayout::Hit(
 
     // make sure the box is hit
     if (tMax.x > 0 && tMax.y > 0 && tMax.z > 0) {
-      GridIdx startIdx;
+      bool isInside = (tMin.x < 0 && tMin.y < 0 && tMin.z < 0);
+      Vec3 hitPoint = isInside ? ray.Position() : ray.PointAt(std::max(std::max(tMin.x, tMin.y), tMin.z));
+      GridIdx startIdx = CalculateFRatio(hitPoint);
       Vec3 nextT(0.0, 0.0, 0.0);
       Vec3 deltaT = Vec3(
         w_.x / n_[0] * abs(invDirection.x),
         w_.y / n_[1] * abs(invDirection.y),
         w_.z / n_[2] * abs(invDirection.z));
-      if (tMin.x < 0 && tMin.y < 0 && tMin.z < 0) {
-        // ray origin is inside the box
-        startIdx = CalculateFRatio(ray.Position());
-        for (int i = 0; i < 3; i++) {
-          nextT[i] = ((startIdx[i] + directionSign[i]) * w_[i] / n_[i] + layoutBoundingBox_.first[i] - ray.Position()[i]) * invDirection[i];
-        }
-      } else {
-        // ray origin is outside the box
-        double initT = std::max(std::max(tMin.x, tMin.y), tMin.z);
-        Vec3 hitPoint = ray.PointAt(initT);
-        startIdx = CalculateFRatio(hitPoint);
-        for (int i = 0; i < 3; i++) {
-          nextT[i] = initT + ((startIdx[i] + directionSign[i]) * w_[i] / n_[i] + layoutBoundingBox_.first[i] - hitPoint[i]) * invDirection[i];
-        }
+      
+      for (int i = 0; i < 3; i++) {
+        nextT[i] = ((startIdx[i] + directionSign[i]) * w_[i] / n_[i] + layoutBoundingBox_.first[i] - hitPoint[i]) * invDirection[i];
+      }
+      if (!isInside) {
+        nextT += std::max(std::max(tMin.x, tMin.y), tMin.z);
       }
       //std::cout << std::endl << n_ << " : " << w_ << " : " << nextT << std::endl;
       // traverse grid

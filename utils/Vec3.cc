@@ -1,5 +1,6 @@
 #include "Vec3.h"
 #include <math.h>
+#include <iostream>
 
 double Vec3::Dot(const Vec3& lhs, const Vec3& rhs)
 {
@@ -15,16 +16,29 @@ Vec3 Vec3::Cross(const Vec3& lhs, const Vec3& rhs)
   return Vec3(new_x, new_y, new_z);
 }
 
-Vec3::Vec3() : x(0), y(0), z(0), length(-1)
+Vec3::Vec3()
+  : x(inList[0]), y(inList[1]), z(inList[2]), length(-1)
 {
+  inList[0] = 0;
+  inList[1] = 0;
+  inList[2] = 0;
 }
 
-Vec3::Vec3(double _x, double _y, double _z) : x(_x), y(_y), z(_z), length(-1)
+Vec3::Vec3(double _x, double _y, double _z)
+  : Vec3()
 {
+  inList[0] = _x;
+  inList[1] = _y;
+  inList[2] = _z;
 }
 
-Vec3::Vec3(const Vec3& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), length(rhs.length)
+Vec3::Vec3(const Vec3& rhs)
+  : Vec3()
 {
+  length = rhs.length;
+  inList[0] = rhs.inList[0];
+  inList[1] = rhs.inList[1];
+  inList[2] = rhs.inList[2];
 }
 
 Vec3 Vec3::Unit()
@@ -34,18 +48,28 @@ Vec3 Vec3::Unit()
 
 Vec3& Vec3::operator=(const Vec3& rhs)
 {
-    x = rhs.x;
-    y = rhs.y;
-    z = rhs.z;
-    length = rhs.length;
-    return *this;
+  length = rhs.length;
+  inList[0] = rhs.inList[0];
+  inList[1] = rhs.inList[1];
+  inList[2] = rhs.inList[2];
+  return *this;
 }
 
 Vec3& Vec3::operator+= (const Vec3& rhs)
 {
-  x += rhs.x;
-  y += rhs.y;
-  z += rhs.z;
+  inList[0] += rhs.inList[0];
+  inList[1] += rhs.inList[1];
+  inList[2] += rhs.inList[2];
+  // Need to recalculate length
+  length = -1;
+  return *this;
+}
+
+Vec3& Vec3::operator+= (const double rhs)
+{
+  inList[0] += rhs;
+  inList[1] += rhs;
+  inList[2] += rhs;
   // Need to recalculate length
   length = -1;
   return *this;
@@ -53,10 +77,12 @@ Vec3& Vec3::operator+= (const Vec3& rhs)
 
 Vec3& Vec3::operator/= (const double rhs)
 {
-  x /= rhs;
-  y /= rhs;
-  z /= rhs;
-  length /= rhs;
+  inList[0] /= rhs;
+  inList[1] /= rhs;
+  inList[2] /= rhs;
+  if (length != -1) {
+    length /= abs(rhs);
+  }
   return *this;
 }
 
@@ -93,30 +119,12 @@ bool Vec3::operator==(const Vec3& rhs)
 
 double& Vec3::operator[](const int index)
 {
-  switch (index) {
-    case 0:
-      return x;
-    case 1:
-      return y;
-    case 2:
-      return z;
-    default:
-      return x;
-  }
+  return inList[index];
 }
 
 const double Vec3::operator[](const int index) const
 {
-  switch (index) {
-    case 0:
-      return x;
-    case 1:
-      return y;
-    case 2:
-      return z;
-    default:
-      return x;
-  }
+  return inList[index];
 }
 
 double Vec3::Length()

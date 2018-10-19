@@ -47,6 +47,10 @@ clean:
 $(BUILDDIR)/sample : $(UTILS_OBJS) $(CORE_OBJS) $(SHADERS_OBJS) $(SAMPLERS_OBJS) $(GEOMETRIC_OBJS) $(EXTERNAL_OBJS)
 	$(CXX) -lpng -o $@ $^
 
-$(BUILDDIR)/%.o : %.c*
+$(BUILDDIR)/%.o : %.c* %.h
+	mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+$(BUILDDIR)/main.o : main.c*
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -o $@ $<

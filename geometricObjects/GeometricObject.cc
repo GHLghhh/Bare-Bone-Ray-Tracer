@@ -2,7 +2,7 @@
 
 GeometricObject::GeometricObject(Vec3 position, RGBColor color)
   : Object(position), boundingBox_(position, position), color_(color)
-{  
+{
 }
 
 void

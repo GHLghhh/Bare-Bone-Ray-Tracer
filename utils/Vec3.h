@@ -13,6 +13,7 @@ public:
   Vec3(const Vec3& rhs);
   Vec3& operator= (const Vec3& rhs);
   Vec3& operator+= (const Vec3& rhs);
+  Vec3& operator+= (const double rhs);
   Vec3& operator/= (const double rhs);
   Vec3 operator/ (const double rhs) const;
   Vec3 operator* (const double rhs) const;
@@ -29,9 +30,12 @@ public:
   double KNorm(int k);
   Vec3 Unit();
 
-  double x;
-  double y;
-  double z;
+  double& x;
+  double& y;
+  double& z;
+
+protected:
+  double inList[3];
 
 private:
   double length;
