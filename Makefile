@@ -37,9 +37,12 @@ CORE_SRCS	:=	Camera.cc \
 				GeometricLayout.cc
 CORE_OBJS	:=	$(addprefix $(BUILDDIR)/, $(CORE_SRCS:%.cc=%.o))
 
-.PHONY: all clean
+.PHONY: all debug clean
 
 all: $(BUILDDIR)/sample
+
+debug: CXXFLAGS += -g
+debug: $(BUILDDIR)/sample
 
 clean:
 	rm -rf $(BUILDDIR)
