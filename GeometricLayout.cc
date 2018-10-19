@@ -96,69 +96,55 @@ bool GridLayout::Hit(
       1.0 / ray.Direction().x,
       1.0 / ray.Direction().y,
       1.0 / ray.Direction().z);
-    Vec3 directionSign(1.0, 1.0, 1.0);
+    GridIdx directionSign({1, 1, 1});
     Vec3 tMin = Vec3(0.0, 0.0, 0.0);
     Vec3 tMax = Vec3(0.0, 0.0, 0.0);
-    //std::cout << "invDirection: " << invDirection << std::endl;
-    if (invDirection.x >= 0) {
-      tMin.x = (layoutBoundingBox_.first.x - ray.Position().x) * invDirection.x;
-      tMax.x = (layoutBoundingBox_.second.x - ray.Position().x) * invDirection.x;
-    } else {
-      directionSign.x = 0;
-      tMin.x = (layoutBoundingBox_.second.x - ray.Position().x) * invDirection.x;
-      tMax.x = (layoutBoundingBox_.first.x - ray.Position().x) * invDirection.x;
+    
+    for (int i = 0; i < 3; i++) {
+      if (invDirection[i] >= 0) {
+        tMin[i] = (layoutBoundingBox_.first[i] - ray.Position()[i]) * invDirection[i];
+        tMax[i] = (layoutBoundingBox_.second[i] - ray.Position()[i]) * invDirection[i];
+      } else {
+        directionSign[i] = 0;
+        tMin[i] = (layoutBoundingBox_.second[i] - ray.Position()[i]) * invDirection[i];
+        tMax[i] = (layoutBoundingBox_.first[i] - ray.Position()[i]) * invDirection[i];
+      }
     }
-    if (invDirection.y >= 0) {
-      tMin.y = (layoutBoundingBox_.first.y - ray.Position().y) * invDirection.y;
-      tMax.y = (layoutBoundingBox_.second.y - ray.Position().y) * invDirection.y;
-    } else {
-      directionSign.y = 0;
-      tMin.y = (layoutBoundingBox_.second.y - ray.Position().y) * invDirection.y;
-      tMax.y = (layoutBoundingBox_.first.y - ray.Position().y) * invDirection.y;
-    }
-    if (invDirection.z >= 0) {
-      tMin.z = (layoutBoundingBox_.first.z - ray.Position().z) * invDirection.z;
-      tMax.z = (layoutBoundingBox_.second.z - ray.Position().z) * invDirection.z;
-    } else {
-      directionSign.z = 0;
-      tMin.z = (layoutBoundingBox_.second.z - ray.Position().z) * invDirection.z;
-      tMax.z = (layoutBoundingBox_.first.z - ray.Position().z) * invDirection.z;
-    }
+
     // make sure the box is hit
     if (tMax.x > 0 && tMax.y > 0 && tMax.z > 0) {
-      Vec3 startIdx;
+      GridIdx startIdx;
       Vec3 nextT(0.0, 0.0, 0.0);
       Vec3 deltaT = Vec3(
-        w_.x / n_.x * abs(invDirection.x),
-        w_.y / n_.y * abs(invDirection.y),
-        w_.z / n_.z * abs(invDirection.z));
+        w_.x / n_[0] * abs(invDirection.x),
+        w_.y / n_[1] * abs(invDirection.y),
+        w_.z / n_[2] * abs(invDirection.z));
       if (tMin.x < 0 && tMin.y < 0 && tMin.z < 0) {
         // ray origin is inside the box
-        //std::cout << " should not hit: " << tMin << std::endl;
         startIdx = CalculateFRatio(ray.Position());
-        nextT.x = ((startIdx.x + (int)directionSign.x) / n_.x * w_.x + layoutBoundingBox_.first.x - ray.Position().x) * invDirection.x;
-        nextT.y = ((startIdx.y + (int)directionSign.y) / n_.y * w_.y + layoutBoundingBox_.first.y - ray.Position().y) * invDirection.y;
-        nextT.z = ((startIdx.z + (int)directionSign.z) / n_.z * w_.z + layoutBoundingBox_.first.z - ray.Position().z) * invDirection.z;
+        for (int i = 0; i < 3; i++) {
+          nextT[i] = ((startIdx[i] + directionSign[i]) * w_[i] / n_[i] + layoutBoundingBox_.first[i] - ray.Position()[i]) * invDirection[i];
+        }
       } else {
         // ray origin is outside the box
         double initT = std::max(std::max(tMin.x, tMin.y), tMin.z);
         Vec3 hitPoint = ray.PointAt(initT);
         startIdx = CalculateFRatio(hitPoint);
-        nextT.x = initT + ((startIdx.x + (int)directionSign.x) / n_.x * w_.x + layoutBoundingBox_.first.x - hitPoint.x) * invDirection.x;
-        nextT.y = initT + ((startIdx.y + (int)directionSign.y) / n_.y * w_.y + layoutBoundingBox_.first.y - hitPoint.y) * invDirection.y;
-        nextT.z = initT + ((startIdx.z + (int)directionSign.z) / n_.z * w_.z + layoutBoundingBox_.first.z - hitPoint.z) * invDirection.z;
+        for (int i = 0; i < 3; i++) {
+          nextT[i] = initT + ((startIdx[i] + directionSign[i]) * w_[i] / n_[i] + layoutBoundingBox_.first[i] - hitPoint[i]) * invDirection[i];
+        }
       }
       //std::cout << std::endl << n_ << " : " << w_ << " : " << nextT << std::endl;
       // traverse grid
-      while ((int)startIdx.x < (int)n_.x && (int)startIdx.y < (int)n_.y && (int)startIdx.z < (int)n_.z
-        && (int)startIdx.x >= 0 && (int)startIdx.y >= 0 && (int)startIdx.z >= 0) {
+      while (startIdx[0] < n_[0] && startIdx[1] < n_[1] && startIdx[2] < n_[2]
+        && startIdx[0] >= 0 && startIdx[1] >= 0 && startIdx[2] >= 0) {
         // uint64_t idx = MortonCode((uint)startIdx.x, (uint)startIdx.y, (uint)startIdx.z);
         // auto itr = grids_.find(idx);
         //if (itr != grids_.end()) {
         //std::cout <<  "  " << startIdx; 
-        if (gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z].size() != 0) {
+        if (gridList[startIdx[0] * n_[1] * n_[2] + startIdx[1] * n_[2] + startIdx[2]].size() != 0) {
           //std::cout << "  " << gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z].size();
-          for (auto& objPtr : gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z]) {
+          for (auto& objPtr : gridList[startIdx[0] * n_[1] * n_[2] + startIdx[1] * n_[2] + startIdx[2]]) {
             double tTemp = t;
             ShadeRec srTemp(sr.eyePosition);
             // Hit
@@ -180,19 +166,18 @@ bool GridLayout::Hit(
           if (t != -1 && t <= nextT.x)
             return HitOutlier(ray, t, sr);
           nextT.x += deltaT.x;
-          startIdx.x += (directionSign.x != 1.0) ? -1 : 1;
+          startIdx[0] += (directionSign[0] != 1) ? -1 : 1;
         } else if (nextT.y < nextT.z) {
           if (t != -1 && t <= nextT.y)
             return HitOutlier(ray, t, sr);
           nextT.y += deltaT.y;
-          startIdx.y += (directionSign.y != 1.0) ? -1 : 1;
+          startIdx[1] += (directionSign[1] != 1) ? -1 : 1;
         } else {
           if (t != -1 && t <= nextT.z)
             return HitOutlier(ray, t, sr);
           nextT.z += deltaT.z;
-          startIdx.z += (directionSign.z != 1.0) ? -1 : 1;
+          startIdx[2] += (directionSign[2] != 1) ? -1 : 1;
         }
-        //std::cout << "Here with " << startIdx << std::endl;
       }
     }
   }
@@ -229,33 +214,28 @@ void GridLayout::UpdateLayout()
 
       // calculate grid information
       // [TODO] make it a function? make 'm' a parameter
-      double w_x = layoutBoundingBox_.second.x - layoutBoundingBox_.first.x;
-      double w_y = layoutBoundingBox_.second.y - layoutBoundingBox_.first.y;
-      double w_z = layoutBoundingBox_.second.z - layoutBoundingBox_.first.z;
-      double s = pow(w_x * w_y * w_z / geometricObjects_.size(), 1.0 / 3);
-      int n_x = (int)(2 * w_x / s) + 1;
-      int n_y = (int)(2 * w_y / s) + 1;
-      int n_z = (int)(2 * w_z / s) + 1;
+      w_ = layoutBoundingBox_.second - layoutBoundingBox_.first;
+      double s = pow(w_.x * w_.y * w_.z / geometricObjects_.size(), 1.0 / 3);
+      n_.clear();
+      for (int i = 0; i < 3; i++) {
+        n_.push_back((size_t)(2 * w_[i] / s) + 1);
+      }
 
-      for (int idx = 0; idx < n_x * n_y * n_z; idx++) {
+      for (int idx = 0; idx < n_[0] * n_[1] * n_[2]; idx++) {
         gridList.push_back(std::vector<GeometricObject*>(0, nullptr));
       }
 
       // assign objects into grids
-      w_ = Vec3(w_x, w_y, w_z);
-      n_ = Vec3(n_x, n_y, n_z);
-      // std::cout << "Layout BBox: " << w_ << std::endl;
-      // std::cout << "Grids: " << n_ << std::endl;
       for (auto& objPtr : geometricObjects_) {
         if (!(objPtr->boundingBox_.first == objPtr->boundingBox_.second)) {
-          Vec3 minIdx = CalculateFRatio(objPtr->boundingBox_.first);
-          Vec3 maxIdx = CalculateFRatio(objPtr->boundingBox_.second);
+          GridIdx minIdx = CalculateFRatio(objPtr->boundingBox_.first);
+          GridIdx maxIdx = CalculateFRatio(objPtr->boundingBox_.second);
           //std::cout << "Obj at postion " << objPtr->Position() << " BBox: <" << minIdx << ", " << maxIdx << ">" << std::endl;
-          for (int i = (int)minIdx.x; i <= (int)maxIdx.x; i++) {
-            for (int j = (int)minIdx.y; j <= (int)maxIdx.y; j++) {
-              for (int k = (int)minIdx.z; k <= (int)maxIdx.z; k++) {
+          for (size_t i = minIdx[0]; i <= maxIdx[0]; i++) {
+            for (size_t j = minIdx[1]; j <= maxIdx[1]; j++) {
+              for (size_t k = minIdx[2]; k <= maxIdx[2]; k++) {
                 //std::cout << i << "," << j << "," << k << std::endl;
-                gridList[i * n_y * n_z + j * n_z + k].push_back(objPtr);
+                gridList[i * n_[1] * n_[2] + j * n_[2] + k].push_back(objPtr);
                 // uint64_t idx = MortonCode({i, j, k});
                 // auto itr = grids_.find(idx);
                 // if (itr == grids_.end()) {
@@ -290,10 +270,25 @@ bool GridLayout::HitOutlier(const Ray& ray, double& t, ShadeRec& sr)
   return (t != -1);
 }
 
-Vec3 GridLayout::CalculateFRatio(const Vec3& position)
+GridLayout::GridIdx GridLayout::CalculateFRatio(const Vec3& position)
 {
-  return Vec3(
-    (int)((position.x - layoutBoundingBox_.first.x - kEPSILON) / w_.x * n_.x),
-    (int)((position.y - layoutBoundingBox_.first.y - kEPSILON) / w_.y * n_.y),
-    (int)((position.z - layoutBoundingBox_.first.z - kEPSILON) / w_.z * n_.z));
+  GridIdx res;
+  for (int i = 0; i < 3; i++) {
+    double axisIdx = (position[i] - layoutBoundingBox_.first[i] - kEPSILON) / w_[i];
+    // [TODO] examine why it is off (i.e. "hit" point far away from BBox)
+    // may be fatal
+    if (axisIdx < 0) {
+      res.push_back(0);
+      // if ((size_t)(axisIdx * n_[i]) > 0) {
+      // std::cout << "Actual: " << ((position[i] - layoutBoundingBox_.first[i] - kEPSILON) / w_[i] * n_[i]) << std::endl;
+      // std::cout << "Cast: " << (size_t)((position[i] - layoutBoundingBox_.first[i] - kEPSILON) / w_[i] * n_[i]) << std::endl;
+      // std::cout << "Hit point: " << position << ", BBox: " << layoutBoundingBox_.first << ", idx: " << i << std::endl;
+      // }
+    } else if (axisIdx > 1) {
+      res.push_back(n_[i]-1);
+    } else {
+      res.push_back((size_t)(axisIdx * n_[i]));
+    }
+  }
+  return res;
 }

@@ -15,7 +15,7 @@
 
 #include <time.h>
 
-static bool DEBUG = true;
+static bool DEBUG = false;
 
 void ToPNG(const std::string& filename, const Scene& scene)
 {
@@ -50,7 +50,7 @@ int main() {
     PointLight light2(Vec3(10, 0, 5), RGBColor(1.0, 0.5, 0.5));
 
     Sampler2D sampler = Sampler2D();
-    ViewPlane viewPlane(0.01,0.01,108,96);
+    ViewPlane viewPlane(0.01,0.01,1080,960);
 
     world.SetGeometricLayoutType(LayoutType::GRID);
     world.SetViewPlane(&viewPlane);
@@ -67,7 +67,6 @@ int main() {
     Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
     Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
     Sphere sphere3(Vec3(-0.0269652,0.795313,-1.81842), 1.0, RGBColor(1.0,0.5,1.0));
-    
 
     world.AddGeometricObject(&triangle1);
     world.AddGeometricObject(&triangle2);
@@ -126,58 +125,58 @@ int main() {
     }
 
     /* Results from grid layout */
-    for (int i = 0; i < spheres.size(); i++) {
-      world.AddGeometricObject(&spheres[i]);
-      if (i == 99) {
-        time_t start = time(0);
-        Scene res = world.Render();
-        double seconds = difftime(time(0), start);
-        ToPNG("outs/1Hballs_grid.png", res);
-        std::cout << "Finished 1h balls with grid in " << seconds << std::endl;
-      }
-      if (i == 999) {
-        time_t start = time(0);
-        Scene res = world.Render();
-        double seconds = difftime(time(0), start);
-        ToPNG("outs/1kballs_grid.png", res);
-        std::cout << "Finished 1k balls with grid in " << seconds << std::endl;
-      }
-      if (i == 9999) {
-        time_t start = time(0);
-        Scene res = world.Render();
-        double seconds = difftime(time(0), start);
-        ToPNG("outs/1wballs_grid.png", res);
-        std::cout << "Finished 1w balls with grid in " << seconds << std::endl;
-      }
-    }
+    // for (int i = 0; i < spheres.size(); i++) {
+    //   world.AddGeometricObject(&spheres[i]);
+    //   if (i == 99) {
+    //     time_t start = time(0);
+    //     Scene res = world.Render();
+    //     double seconds = difftime(time(0), start);
+    //     ToPNG("outs/1Hballs_grid.png", res);
+    //     std::cout << "Finished 1h balls with grid in " << seconds << std::endl;
+    //   }
+    //   if (i == 999) {
+    //     time_t start = time(0);
+    //     Scene res = world.Render();
+    //     double seconds = difftime(time(0), start);
+    //     ToPNG("outs/1kballs_grid.png", res);
+    //     std::cout << "Finished 1k balls with grid in " << seconds << std::endl;
+    //   }
+    //   if (i == 9999) {
+    //     time_t start = time(0);
+    //     Scene res = world.Render();
+    //     double seconds = difftime(time(0), start);
+    //     ToPNG("outs/1wballs_grid.png", res);
+    //     std::cout << "Finished 1w balls with grid in " << seconds << std::endl;
+    //   }
+    // }
 
     /* Results from list layout (no acceleration) */
-    world.DiscardGeometricObjects();
-    world.SetGeometricLayoutType(LayoutType::LIST);
-    for (int i = 0; i < spheres.size(); i++) {
-      world.AddGeometricObject(&spheres[i]);
-      if (i == 99) {
-        time_t start = time(0);
-        Scene res = world.Render();
-        double seconds = difftime(time(0), start);
-        ToPNG("outs/1Hballs_list.png", res);
-        std::cout << "Finished 1h balls with list in " << seconds << std::endl;
-      }
-      if (i == 999) {
-        time_t start = time(0);
-        Scene res = world.Render();
-        double seconds = difftime(time(0), start);
-        ToPNG("outs/1kballs_list.png", res);
-        std::cout << "Finished 1k balls with list in " << seconds << std::endl;
-      }
-      if (i == 9999) {
-        time_t start = time(0);
-        Scene res = world.Render();
-        double seconds = difftime(time(0), start);
-        ToPNG("outs/1wballs_list.png", res);
-        std::cout << "Finished 1w balls with list in " << seconds << std::endl;
-      }
-    }
+    // world.DiscardGeometricObjects();
+    // world.SetGeometricLayoutType(LayoutType::LIST);
+    // for (int i = 0; i < spheres.size(); i++) {
+    //   world.AddGeometricObject(&spheres[i]);
+    //   if (i == 99) {
+    //     time_t start = time(0);
+    //     Scene res = world.Render();
+    //     double seconds = difftime(time(0), start);
+    //     ToPNG("outs/1Hballs_list.png", res);
+    //     std::cout << "Finished 1h balls with list in " << seconds << std::endl;
+    //   }
+    //   if (i == 999) {
+    //     time_t start = time(0);
+    //     Scene res = world.Render();
+    //     double seconds = difftime(time(0), start);
+    //     ToPNG("outs/1kballs_list.png", res);
+    //     std::cout << "Finished 1k balls with list in " << seconds << std::endl;
+    //   }
+    //   if (i == 9999) {
+    //     time_t start = time(0);
+    //     Scene res = world.Render();
+    //     double seconds = difftime(time(0), start);
+    //     ToPNG("outs/1wballs_list.png", res);
+    //     std::cout << "Finished 1w balls with list in " << seconds << std::endl;
+    //   }
+    // }
 
     /* Setup for mesh */
     std::vector<Triangle> meshes = LoadFromObjFile("teapot.obj");
@@ -194,16 +193,17 @@ int main() {
     world.AddLightSource(&light3);
     time_t start = time(0);
 
-    Scene res = world.Render();
-    double seconds = difftime(time(0), start);
-    ToPNG("outs/teapot_list.png", res);
-    std::cout << "Finished bunny with list in " << seconds << std::endl;
+    Scene res;
+    // res = world.Render();
+    // double seconds = difftime(time(0), start);
+    // ToPNG("outs/teapot_list.png", res);
+    // std::cout << "Finished bunny with list in " << seconds << std::endl;
 
     world.SetGeometricLayoutType(LayoutType::GRID);
 
     start = time(0);
     res = world.Render();
-    seconds = difftime(time(0), start);
+    double seconds = difftime(time(0), start);
     ToPNG("outs/teapot_grid.png", res);
     std::cout << "Finished bunny with grid in " << seconds << std::endl;
   }

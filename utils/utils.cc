@@ -1,6 +1,6 @@
 #include "utils.h"
 
-uint64_t MortonCode(std::vector<size_t> index)
+uint64_t MortonCode(const std::vector<size_t>& index)
 {
   uint64_t res = 0;
   size_t shift = 0;

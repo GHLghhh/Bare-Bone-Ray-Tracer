@@ -42,14 +42,14 @@ public:
     const Ray& ray, double& t, ShadeRec& sr,
     bool earlyStopping = false, double stopT = -1) override;
 private:
+  using GridIdx = std::vector<size_t>;
+
   void UpdateLayout() override;
   bool HitOutlier(const Ray& ray, double& t, ShadeRec& sr);
-  Vec3 CalculateFRatio(const Vec3& position);
+  GridIdx CalculateFRatio(const Vec3& position);
   std::unordered_map<uint64_t, std::vector<GeometricObject*>> grids_;
   std::vector<std::vector<GeometricObject*>> gridList;
   std::vector<GeometricObject*> outliers_;
   Vec3 w_;
-  Vec3 n_;
+  GridIdx n_;
 };
-
-uint64_t MortonCode(uint i, uint j, uint k);
