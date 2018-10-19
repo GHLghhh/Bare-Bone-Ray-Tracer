@@ -5,14 +5,23 @@
 #include "utils/constants.h"
 
 World::World()
-  : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr)
+  : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr),
+    type_(LayoutType::LIST)
 {
-  geometricLayoutPtr_ = new GeometricLayout();
+  geometricLayoutPtr_ = std::unique_ptr<GeometricLayout>(new GeometricLayout());
+}
+
+World::World(const World& rhs)
+  : backGroundColor(rhs.backGroundColor),
+    cameraPtr_(rhs.cameraPtr_), viewPlanePtr_(rhs.viewPlanePtr_),
+    samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_), type_(rhs.type_)
+{
+  ConvertFromExistingLayout(type_, (rhs.geometricLayoutPtr_->GetObjects()));
 }
 
 World::~World()
 {
-  delete geometricLayoutPtr_;
+  geometricLayoutPtr_.reset();
 }
 
 void World::SetCamera(Camera* objPtr)
@@ -33,20 +42,21 @@ void World::SetSampler(Sampler2D* objPtr)
 // [TODO] hide the layout creation
 void World::SetGeometricLayoutType(LayoutType type)
 {
-  GeometricLayout* old = geometricLayoutPtr_;
+  ConvertFromExistingLayout(type, geometricLayoutPtr_->GetObjects());
+}
+
+void World::ConvertFromExistingLayout(
+  LayoutType type, std::vector<GeometricObject*> layoutObjs)
+{
   switch (type) {
     case LayoutType::LIST:
       {
-        geometricLayoutPtr_ = new GeometricLayout();
-        geometricLayoutPtr_->TransferFrom(*old);
-        //delete old;
+        geometricLayoutPtr_.reset(new GeometricLayout(layoutObjs));
       }
       break;
     case LayoutType::GRID:
       {
-        geometricLayoutPtr_ = new GridLayout();
-        geometricLayoutPtr_->TransferFrom(*old);
-        //delete old;
+        geometricLayoutPtr_.reset(new GridLayout(layoutObjs));
       }
       break;
     default:

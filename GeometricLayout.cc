@@ -9,11 +9,9 @@ GeometricLayout::GeometricLayout()
 {
 }
 
-void GeometricLayout::TransferFrom(GeometricLayout& rhs)
+GeometricLayout::GeometricLayout(std::vector<GeometricObject*>& geometricObjects)
+  : layoutUpdated(false), geometricObjects_(geometricObjects)
 {
-  layoutUpdated = false;
-  geometricObjects_ = rhs.geometricObjects_;
-  UpdateLayout();
 }
 
 void GeometricLayout::AddObject(GeometricObject* objPtr)
@@ -79,6 +77,11 @@ void GeometricLayout::ExtendLayoutBBox(const BBox& objBBox)
 
 GridLayout::GridLayout()
   : GeometricLayout()
+{
+}
+
+GridLayout::GridLayout(std::vector<GeometricObject*>& geometricObjects)
+  : GeometricLayout(geometricObjects)
 {
 }
 
@@ -202,7 +205,6 @@ bool GridLayout::Hit(
 void GridLayout::UpdateLayout()
 {
   if (!layoutUpdated) {
-    // std::cout << "Update in grid" << std::endl;
     // Recalculate bounding box and find outlier
     layoutBoundingBox_ = std::make_pair(Vec3(0.0, 0.0, 0.0), Vec3(0.0, 0.0, 0.0));
     grids_.clear();

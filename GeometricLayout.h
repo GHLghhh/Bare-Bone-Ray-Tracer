@@ -16,7 +16,8 @@ enum LayoutType {
 class GeometricLayout {
 public:
   GeometricLayout();
-  void TransferFrom(GeometricLayout& rhs);
+  GeometricLayout(std::vector<GeometricObject*>& geometricObjects);
+  ~GeometricLayout() = default;
   virtual bool Hit(
     const Ray& ray, double& t, ShadeRec& sr,
     bool earlyStopping = false, double stopT = -1);
@@ -24,6 +25,7 @@ public:
   // [TODO] make it more general, something like nested layout
   void AddObject(GeometricObject* objPtr);
   void DeleteObjects();
+  std::vector<GeometricObject*> GetObjects() { return geometricObjects_; };
 
 protected:
   // Update implicitly
@@ -38,6 +40,8 @@ protected:
 class GridLayout : public GeometricLayout {
 public:
   GridLayout();
+  GridLayout(std::vector<GeometricObject*>& geometricObjects);
+  ~GridLayout() = default;
   bool Hit(
     const Ray& ray, double& t, ShadeRec& sr,
     bool earlyStopping = false, double stopT = -1) override;
@@ -51,5 +55,3 @@ private:
   Vec3 w_;
   Vec3 n_;
 };
-
-uint64_t MortonCode(uint i, uint j, uint k);

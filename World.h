@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "Camera.h"
 #include "Light.h"
 #include "samplers/Sampler2D.h"
@@ -12,6 +13,7 @@ using Scene = std::vector<std::vector<RGBColor>>;
 class World {
 public:
   World();
+  World(const World& rhs);
   ~World();
 
   // [TODO] find a better way to manage objects
@@ -27,10 +29,13 @@ public:
 
   Scene Render();
 private:
+  void ConvertFromExistingLayout(
+    LayoutType type, std::vector<GeometricObject*> layoutObjs);
   RGBColor backGroundColor;
   Camera* cameraPtr_;
   ViewPlane* viewPlanePtr_;
   Sampler2D* samplerPtr_;
   std::vector<Light*> lights_;
-  GeometricLayout* geometricLayoutPtr_;
+  LayoutType type_;
+  std::unique_ptr<GeometricLayout> geometricLayoutPtr_;
 };

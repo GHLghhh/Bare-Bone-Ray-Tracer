@@ -51,7 +51,7 @@ int main() {
 
     Sampler2D sampler = Sampler2D();
     ViewPlane viewPlane(0.01,0.01,108,96);
-
+    
     world.SetGeometricLayoutType(LayoutType::GRID);
     world.SetViewPlane(&viewPlane);
     world.SetSampler(&sampler);
