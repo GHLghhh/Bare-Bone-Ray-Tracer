@@ -6,11 +6,16 @@
 #include "utils/Vec3.h"
 #include "utils/RGBColor.h"
 #include "utils/ShadeRec.h"
+#include "utils/io/loadMeshes.h"
 #include "World.h"
 #include "samplers/MultiJitteredSampler2D.h"
 
 #include "external/png.h"
 #include "external/rgbapixel.h"
+
+#include <time.h>
+
+static bool DEBUG = true;
 
 void ToPNG(const std::string& filename, const Scene& scene)
 {
@@ -30,56 +35,193 @@ void ToPNG(const std::string& filename, const Scene& scene)
 }
 
 int main() {
+  /* Initialize world */
   World world = World();
 
-  Vec3 cp = Vec3(0,0,2);
-  Vec3 la = Vec3(0,0,-1);
-  Vec3 up = Vec3(0,1,0);
-  PerspectiveCamera cameraP(cp, la, up, 2);
-  OrthographicCamera cameraO(cp, la, up);
-  PerspectiveCamera cameraP2(Vec3(3,0,0), Vec3(-1, 0, 0), up, 2);
+  if (DEBUG) {
+    std::cout << "Initializing world setting" << std::endl;
+    Vec3 cp(0,0, 2);
+    Vec3 la(0,0,-1);
+    Vec3 up(0,1,0);
 
-  ViewPlane viewPlane(0.05,0.05,100,100);
+    PerspectiveCamera cameraP(cp, la, up, 2);
+    OrthographicCamera cameraO(cp, la, up);
+    PointLight light(Vec3(5, 10, 0), RGBColor(0.5, 1.0, 1.0));
+    PointLight light2(Vec3(10, 0, 5), RGBColor(1.0, 0.5, 0.5));
 
-  Sampler2D sampler = Sampler2D();
-  MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
+    Sampler2D sampler = Sampler2D();
+    ViewPlane viewPlane(0.01,0.01,108,96);
 
-  PointLight light(Vec3(5, 10, 1), Vec3(0.5, 1.0, 1.0));
-  PointLight light2(Vec3(10, 0, 1), Vec3(1.0, 0.5, 0.5));
-  Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
-    RGBColor(0.0,1.0,0.0));
-  Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
-    RGBColor(1.0,0.0,0.5));
+    std::cout << "Applying world setting" << std::endl;
+    world.SetGeometricLayoutType(LayoutType::GRID);
+    world.SetViewPlane(&viewPlane);
+    world.SetSampler(&sampler);
+    world.AddLightSource(&light);
+    world.AddLightSource(&light2);
 
-  Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
-  Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
+    /* Testing set */
+    std::cout << "Creating geometric objects" << std::endl;
+    Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
+      RGBColor(0.0,1.0,0.0));
+    Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
+      RGBColor(1.0,0.0,0.5));
 
-  world.SetViewPlane(&viewPlane);
-  world.AddLightSource(&light);
-  world.AddLightSource(&light2);
-  world.AddGeometricObject(&triangle1);
-  world.AddGeometricObject(&triangle2);
-  world.AddGeometricObject(&sphere1);
-  world.AddGeometricObject(&sphere2);
+    Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
+    Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
+    
+    std::cout << "Adding geometric objects" << std::endl;
+    world.AddGeometricObject(&triangle1);
+    world.AddGeometricObject(&triangle2);
+    world.AddGeometricObject(&sphere1);
+    world.AddGeometricObject(&sphere2);
 
-  world.SetCamera(&cameraP);
-  world.SetSampler(&sampler);
+    // // [TODO] check if orthographic camera is shaded correctly.
+    std::cout << "Rendering orthographic scene" << std::endl;
+    world.SetCamera(&cameraO);
+    time_t start = time(0);
+    Scene res = world.Render();
+    double seconds = difftime(time(0), start);
+    ToPNG("outs/orthographic.png", res);
+    std::cout << "Rendered orthographic in " << seconds << " seconds"<< std::endl;
 
-  Scene res = world.Render();
-  ToPNG("outs/singleRay.png", res);
+    std::cout << "Rendering perspective scene" << std::endl;
+    world.SetCamera(&cameraP);
+    start = time(0);
+    res = world.Render();
+    ToPNG("outs/perspective.png", res);
+    seconds = difftime(time(0), start);
+    std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;
+  } else {
+    std::cout << "Initializing world setting" << std::endl;
+    Vec3 cp = Vec3(0,0, 2);
+    Vec3 la = Vec3(0,0,-1);
+    Vec3 up = Vec3(0,1,0);
 
-  world.SetSampler(&samplerM);
-  res = world.Render();
-  ToPNG("outs/multiJittering.png", res);
+    Vec3 cpMesh = Vec3(0, 2.2, 3);
+    Vec3 laMesh = Vec3(0,-0.1,-1);
+    Vec3 upMesh = Vec3(0,1,0);
+    PerspectiveCamera cameraP(cp, la, up, 2);
+    PerspectiveCamera cameraPMesh(cpMesh, laMesh, upMesh, 2);
+    OrthographicCamera cameraO(cp, la, up);
 
-  // [TODO] check if orthographic camera is shaded correctly.
-  world.SetCamera(&cameraO);
-  res = world.Render();
-  ToPNG("outs/orthographic.png", res);
+    ViewPlane viewPlane(0.01,0.01,1080,960);
 
-  world.SetCamera(&cameraP2);
-  res = world.Render();
-  ToPNG("outs/perspective2.png", res);
+    PointLight light(Vec3(5, 10, 0), Vec3(0.5, 1.0, 1.0));
+    PointLight light2(Vec3(10, 0, 5), Vec3(1.0, 0.5, 0.5));
+    PointLight light3(Vec3(-1, -3, 3), Vec3(0.5, 1.0, 0.5));
+
+    MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
+
+    std::cout << "Applying world setting" << std::endl;
+    world.SetGeometricLayoutType(LayoutType::GRID);
+    world.SetViewPlane(&viewPlane);
+    world.SetSampler(&samplerM);
+    world.SetCamera(&cameraP);
+    world.AddLightSource(&light);
+    world.AddLightSource(&light2);
+
+    /* Generate spheres with different order of magnitude */
+    std::cout << "Creating geometric objects" << std::endl;
+    std::vector<Sphere> spheres;
+    for (int i = 0; i < 10000; i++) {
+      Vec3 randomPosition = Vec3(((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) + 0.3) * -20);
+      double randomRadius = ((double) rand() / (RAND_MAX) + 0.1);
+      RGBColor randomColor = RGBColor(((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)));
+      spheres.emplace_back(randomPosition, randomRadius, randomColor);
+    }
+
+    /* Results from grid layout */
+    for (int i = 0; i < spheres.size(); i++) {
+      world.AddGeometricObject(&spheres[i]);
+      if (i == 99) {
+        std::cout << "Rendering 100 sphere with grid" << std::endl;
+        time_t start = time(0);
+        Scene res = world.Render();
+        double seconds = difftime(time(0), start);
+        ToPNG("outs/1Hballs_grid.png", res);
+        std::cout << "Finished 1h balls with grid in " << seconds << std::endl;
+      }
+      if (i == 999) {
+        std::cout << "Rendering 1000 sphere with grid" << std::endl;
+        time_t start = time(0);
+        Scene res = world.Render();
+        double seconds = difftime(time(0), start);
+        ToPNG("outs/1kballs_grid.png", res);
+        std::cout << "Finished 1k balls with grid in " << seconds << std::endl;
+      }
+      if (i == 9999) {
+        std::cout << "Rendering 10000 sphere with grid" << std::endl;
+        time_t start = time(0);
+        Scene res = world.Render();
+        double seconds = difftime(time(0), start);
+        ToPNG("outs/1wballs_grid.png", res);
+        std::cout << "Finished 1w balls with grid in " << seconds << std::endl;
+      }
+    }
+
+    /* Results from list layout (no acceleration) */
+    world.DiscardGeometricObjects();
+    world.SetGeometricLayoutType(LayoutType::LIST);
+    for (int i = 0; i < spheres.size(); i++) {
+      world.AddGeometricObject(&spheres[i]);
+      if (i == 99) {
+        std::cout << "Rendering 100 sphere with list" << std::endl;
+        time_t start = time(0);
+        Scene res = world.Render();
+        double seconds = difftime(time(0), start);
+        ToPNG("outs/1Hballs_list.png", res);
+        std::cout << "Finished 1h balls with list in " << seconds << std::endl;
+      }
+      if (i == 999) {
+        std::cout << "Rendering 1000 sphere with list" << std::endl;
+        time_t start = time(0);
+        Scene res = world.Render();
+        double seconds = difftime(time(0), start);
+        ToPNG("outs/1kballs_list.png", res);
+        std::cout << "Finished 1k balls with list in " << seconds << std::endl;
+      }
+      if (i == 9999) {
+        std::cout << "Rendering 10000 sphere with list" << std::endl;
+        time_t start = time(0);
+        Scene res = world.Render();
+        double seconds = difftime(time(0), start);
+        ToPNG("outs/1wballs_list.png", res);
+        std::cout << "Finished 1w balls with list in " << seconds << std::endl;
+      }
+    }
+
+    /* Setup for mesh */
+    std::cout << "Loading geometric objects from obj file" << std::endl;
+    std::vector<Triangle> meshes = LoadFromObjFile("teapot.obj");
+    std::cout << meshes.size() << std::endl;
+    std::cout << "End loading meshes" << std::endl;
+
+    std::cout << "Adding geometric objects" << std::endl;
+    world.DiscardGeometricObjects();
+    for (size_t i = 0; i < meshes.size(); i++) {
+      world.AddGeometricObject(&meshes[i]);
+    }
+    std::cout << "Finished adding meshes" << std::endl;
+
+    world.SetCamera(&cameraPMesh);
+    world.AddLightSource(&light3);
+
+    std::cout << "Rendering teapot with list" << std::endl;
+    time_t start = time(0);
+    Scene res = world.Render();
+    double seconds = difftime(time(0), start);
+    ToPNG("outs/teapot_list.png", res);
+    std::cout << "Finished bunny with list in " << seconds << std::endl;
+
+    world.SetGeometricLayoutType(LayoutType::GRID);
+
+    std::cout << "Rendering teapot with grid" << std::endl;
+    start = time(0);
+    res = world.Render();
+    seconds = difftime(time(0), start);
+    ToPNG("outs/teapot_grid.png", res);
+    std::cout << "Finished bunny with grid in " << seconds << std::endl;
+  }
 
   return 0;
 }

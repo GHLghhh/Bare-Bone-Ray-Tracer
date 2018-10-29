@@ -6,6 +6,10 @@ Sphere::Sphere(Vec3 position, double radius, RGBColor color)
   : GeometricObject(position, color)
 {
   radius_ = radius;
+  for (int i = 0; i < 3; i++) {
+    boundingBox_.first[i] = position_[i] - radius_;
+    boundingBox_.second[i] = position_[i] + radius_;
+  }
 }
 
 bool Sphere::Hit(const Ray& ray, double& tMin, ShadeRec& sr)

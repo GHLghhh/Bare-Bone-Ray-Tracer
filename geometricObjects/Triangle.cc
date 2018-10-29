@@ -11,7 +11,14 @@ Triangle::Triangle(Vec3 point0, Vec3 point1, Vec3 point2, RGBColor color)
   pointNormal0_ = normal_;
   pointNormal1_ = normal_;
   pointNormal2_ = normal_;
-  
+
+  Vec3 first;
+  Vec3 second;
+  for (size_t idx = 0; idx < 3; idx++) {
+    first[idx] = std::min(std::min(point0_[idx], point1_[idx]), point2_[idx]);
+    second[idx] = std::max(std::max(point0_[idx], point1_[idx]), point2_[idx]);
+  }
+  boundingBox_ = std::make_pair(first, second);
 }
 
 bool Triangle::Hit(const Ray& ray, double& tMin, ShadeRec& sr)
@@ -44,4 +51,10 @@ void Triangle::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
   double a2 = Vec3::Cross((point0_ - sr.hitPosition), (point1_ - sr.hitPosition)).Length();
   double a = a0 + a1 + a2;
   sr.normal = (pointNormal0_ * (a0 / a) + pointNormal1_ * (a1 / a) + pointNormal2_ * (a2 / a)).Unit();
+}
+
+std::ostream& operator<< (std::ostream& out, const Triangle& obj)
+{
+    out << "[" << obj.point0_ << " " << obj.point1_ << " " << obj.point2_ << "]";
+    return out;
 }
