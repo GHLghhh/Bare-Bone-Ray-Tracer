@@ -1,6 +1,6 @@
-#include "Camera.h"
-
 #include <iostream>
+
+#include "Camera.h"
 
 Camera::Camera(Vec3 position, Vec3 lookAt, Vec3 up)
   : Object(position)

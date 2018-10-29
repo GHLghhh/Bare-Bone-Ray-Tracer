@@ -1,8 +1,9 @@
+#include <iostream>
+#include <math.h>
+
 #include "GeometricLayout.h"
 #include "utils/constants.h"
 #include "utils/utils.h"
-#include <math.h>
-#include <iostream>
 
 GeometricLayout::GeometricLayout()
   : layoutUpdated(false), layoutBoundingBox_(Vec3(0.0, 0.0, 0.0), Vec3(0.0, 0.0, 0.0))

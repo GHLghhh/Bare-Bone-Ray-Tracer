@@ -1,6 +1,6 @@
-#include "World.h"
-
 #include <iostream>
+
+#include "World.h"
 #include "shaders/Shader.h"
 #include "utils/constants.h"
 

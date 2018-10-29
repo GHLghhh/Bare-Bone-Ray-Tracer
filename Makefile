@@ -1,6 +1,6 @@
 CXX			?= g++
 CXXFLAGS	= -std=c++11 -c
-BUILDDIR	?= build
+BUILDDIR	?= build_out
 
 EXTERNAL_SRCS	:=	png.cpp \
 					rgbapixel.cpp

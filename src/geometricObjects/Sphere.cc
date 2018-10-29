@@ -1,6 +1,7 @@
+#include <math.h>
+
 #include "Sphere.h"
 #include "../utils/constants.h"
-#include <math.h>
 
 Sphere::Sphere(Vec3 position, double radius, RGBColor color)
   : GeometricObject(position, color)

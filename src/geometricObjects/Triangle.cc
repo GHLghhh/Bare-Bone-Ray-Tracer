@@ -1,6 +1,7 @@
-#include "Triangle.h"
-#include "GeometricObject.h"
 #include <iostream>
+
+#include "GeometricObject.h"
+#include "Triangle.h"
 
 Triangle::Triangle(Vec3 point0, Vec3 point1, Vec3 point2, RGBColor color)
   : Plane(point2, Vec3::Cross(point1 - point0, point2 - point0), color)

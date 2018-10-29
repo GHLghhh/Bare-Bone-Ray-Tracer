@@ -1,12 +1,13 @@
 #pragma once
 
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+#include "Ray.h"
 #include "geometricObjects/GeometricObject.h"
 #include "utils/RGBColor.h"
 #include "utils/ShadeRec.h"
-#include "Ray.h"
-#include <vector>
-#include <tuple>
-#include <unordered_map>
 
 enum LayoutType {
   LIST,

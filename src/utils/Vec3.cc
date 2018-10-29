@@ -1,5 +1,6 @@
-#include "Vec3.h"
 #include <math.h>
+
+#include "Vec3.h"
 
 double Vec3::Dot(const Vec3& lhs, const Vec3& rhs)
 {

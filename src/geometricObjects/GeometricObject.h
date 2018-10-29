@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../Object.h"
+#include "../Ray.h"
 #include "../utils/RGBColor.h"
 #include "../utils/ShadeRec.h"
-#include "../Ray.h"
 
 // <minPosition, maxPosition>
 using BBox = std::pair<Vec3, Vec3>;

@@ -1,12 +1,14 @@
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
+
 #include "Camera.h"
-#include "Light.h"
-#include "samplers/Sampler2D.h"
-#include "geometricObjects/GeometricObject.h"
 #include "GeometricLayout.h"
+#include "Light.h"
+#include "geometricObjects/GeometricObject.h"
+#include "samplers/Sampler2D.h"
+
 
 using Scene = std::vector<std::vector<RGBColor>>;
 

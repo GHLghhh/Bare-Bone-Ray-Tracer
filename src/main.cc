@@ -1,21 +1,21 @@
 #include <iostream>
-#include "Ray.h"
-#include "geometricObjects/Plane.h"
-#include "geometricObjects/Triangle.h"
-#include "geometricObjects/Sphere.h"
-#include "utils/Vec3.h"
-#include "utils/RGBColor.h"
-#include "utils/ShadeRec.h"
-#include "utils/io/loadMeshes.h"
-#include "World.h"
-#include "samplers/MultiJitteredSampler2D.h"
-
-#include "external/png.h"
-#include "external/rgbapixel.h"
-
 #include <time.h>
 
-static bool DEBUG = true;
+#include "thirdParty/png.h"
+#include "thirdParty/rgbapixel.h"
+
+#include "Ray.h"
+#include "World.h"
+#include "geometricObjects/Plane.h"
+#include "geometricObjects/Sphere.h"
+#include "geometricObjects/Triangle.h"
+#include "samplers/MultiJitteredSampler2D.h"
+#include "samplers/Sampler2D.h"
+#include "utils/io/loadMeshes.h"
+#include "utils/RGBColor.h"
+#include "utils/Vec3.h"
+
+static bool DEBUG_BUILD = true;
 
 void ToPNG(const std::string& filename, const Scene& scene)
 {
@@ -38,7 +38,7 @@ int main() {
   /* Initialize world */
   World world = World();
 
-  if (DEBUG) {
+  if (DEBUG_BUILD) {
     std::cout << "Initializing world setting" << std::endl;
     Vec3 cp(0,0, 2);
     Vec3 la(0,0,-1);
