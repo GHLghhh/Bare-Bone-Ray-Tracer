@@ -19,3 +19,10 @@ new_http_archive(
         "https://zlib.net/zlib-1.2.11.tar.gz",
     ],
 )
+
+new_http_archive(
+    name = "gtest",
+    url = "https://github.com/google/googletest/archive/release-1.7.0.zip",
+    sha256 = "b58cb7547a28b2c718d1e38aee18a3659c9e3ff52440297e965f5edffe34b6d0",
+    build_file = "thirdParty/gtest.BUILD",
+)

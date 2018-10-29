@@ -19,6 +19,26 @@ cc_binary(
     ],
 )
 
+# change it to collection of unit tests
+cc_binary(
+    name = "test",
+    srcs = ["main.cc"],
+    deps = [
+        ":Ray",
+        ":World",
+        "//thirdParty:png",
+        "//thirdParty:rgbapixel",
+        "//geometricObjects:Plane",
+        "//geometricObjects:Sphere",
+        "//geometricObjects:Triangle",
+        "//samplers:MultiJitteredSampler2D",
+        "//samplers:Sampler2D",
+        "//utils/io:loadMeshes",
+        "//utils:RGBColor",
+        "//utils:Vec3",
+    ],
+)
+
 cc_library(
     name = "Camera",
     srcs = ["Camera.cc"],
