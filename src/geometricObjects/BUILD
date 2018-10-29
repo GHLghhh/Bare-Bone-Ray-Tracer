@@ -5,10 +5,10 @@ cc_library(
     srcs = ["GeometricObject.cc"],
     hdrs = ["GeometricObject.h"],
     deps = [
-        "//:Object",
-        "//:Ray",
-        "//utils:RGBColor",
-        "//utils:ShadeRec",
+        "//src:Object",
+        "//src:Ray",
+        "//src/utils:RGBColor",
+        "//src/utils:ShadeRec",
     ]
 )
 
@@ -18,7 +18,7 @@ cc_library(
     hdrs = ["Plane.h"],
     deps = [
         ":GeometricObject",
-        "//utils:constants",
+        "//src/utils:constants",
     ]
 )
 
@@ -28,7 +28,7 @@ cc_library(
     hdrs = ["Sphere.h"],
     deps = [
         ":GeometricObject",
-        "//utils:constants",
+        "//src/utils:constants",
     ]
 )
 
@@ -39,6 +39,6 @@ cc_library(
     deps = [
         ":GeometricObject",
         ":Plane",
-        "//utils:constants",
+        "//src/utils:constants",
     ]
 )

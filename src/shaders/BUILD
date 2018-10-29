@@ -5,8 +5,8 @@ cc_library(
     srcs = ["Shader.cc"],
     hdrs = ["Shader.h"],
     deps = [
-        "//:Light",
-        "//utils:RGBColor",
-        "//utils:ShadeRec",
+        "//src:Light",
+        "//src/utils:RGBColor",
+        "//src/utils:ShadeRec",
     ]
 )

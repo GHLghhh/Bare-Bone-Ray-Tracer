@@ -5,7 +5,7 @@ cc_library(
     srcs = ["loadMeshes.cc"],
     hdrs = ["loadMeshes.h"],
     deps = [
-        "//geometricObjects:Triangle",
-        "//utils:Vec3",
+        "//src/geometricObjects:Triangle",
+        "//src/utils:Vec3",
     ]
 )
