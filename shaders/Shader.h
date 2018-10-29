@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../utils/ShadeRec.h"
-#include "../utils/RGBColor.h"
 #include "../Light.h"
+#include "../utils/RGBColor.h"
+#include "../utils/ShadeRec.h"
 
 class Shader {
 public:

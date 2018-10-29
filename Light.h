@@ -1,7 +1,7 @@
 #pragma once
 
-#include "utils/Vec3.h"
 #include "utils/RGBColor.h"
+#include "utils/Vec3.h"
 
 class Light {
 public:

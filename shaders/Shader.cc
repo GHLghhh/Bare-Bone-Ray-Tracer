@@ -1,7 +1,7 @@
-#include "Shader.h"
-
 #include <iostream>
 #include <math.h>
+
+#include "Shader.h"
 
 RGBColor Shader::Diffuse(const ShadeRec& sr, const Light& light)
 {

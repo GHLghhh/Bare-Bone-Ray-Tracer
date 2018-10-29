@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <utility> 
+#include <vector>
 
 using Sample2D = std::pair<double, double>;
 

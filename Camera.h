@@ -1,10 +1,12 @@
 #pragma once
 
 #include <vector>
+
 #include "Object.h"
 #include "Ray.h"
 #include "ViewPlane.h"
 #include "samplers/Sampler2D.h"
+#include "utils/Vec3.h"
 
 using PixelRays = std::vector<std::vector<std::vector<Ray>>>;
 

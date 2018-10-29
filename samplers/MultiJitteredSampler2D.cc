@@ -1,6 +1,7 @@
-#include "MultiJitteredSampler2D.h"
 #include <algorithm>
 #include <random>
+
+#include "MultiJitteredSampler2D.h"
 
 MultiJitteredSampler2D::MultiJitteredSampler2D()
   : Sampler2D()
