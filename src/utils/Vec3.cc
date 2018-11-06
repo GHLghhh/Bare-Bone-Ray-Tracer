@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 
 #include "Vec3.h"
 
@@ -133,7 +133,7 @@ double Vec3::KNorm(int k)
   if (k <= 0) {
     return -1;
   }
-  return pow(pow(abs(x), k) + pow(abs(y), k) + pow(abs(z), k), 1.0 / k);
+  return pow(pow(fabs(x), k) + pow(fabs(y), k) + pow(fabs(z), k), 1.0 / k);
 }
 
 std::ostream& operator<< (std::ostream& out, const Vec3& obj)
