@@ -1,3 +1,6 @@
+#include <cstdint>
 #include <vector>
 
-uint64_t MortonCode(std::vector<size_t> index);
+#pragma once
+
+std::uint64_t MortonCode(std::vector<std::size_t> index);
