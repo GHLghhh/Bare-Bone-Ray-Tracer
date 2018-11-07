@@ -51,6 +51,7 @@ cc_library(
     srcs = ["Light.cc"],
     hdrs = ["Light.h"],
     deps = [
+        "//src/geometricObjects:Sphere",
         "//src/utils:RGBColor",
         "//src/utils:Vec3",
     ]

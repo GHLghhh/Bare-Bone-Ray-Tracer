@@ -13,9 +13,9 @@ DirectionalLight::DirectionalLight(
 {
 }
 
-Vec3 DirectionalLight::ToLightDirection(const Vec3& hitPoint) const
+std::vector<Vec3> DirectionalLight::ToLightDirection(const Vec3& hitPoint) const
 {
-  return param_ * -1;
+  return std::vector<Vec3>(1, param_ * -1);
 }
 
 double DirectionalLight::ToLightTime(const Vec3& hitPoint) const
@@ -28,12 +28,36 @@ PointLight::PointLight(Vec3 lightPosition, RGBColor color, bool shadow)
 {
 }
 
-Vec3 PointLight::ToLightDirection(const Vec3& hitPoint) const
+std::vector<Vec3> PointLight::ToLightDirection(const Vec3& hitPoint) const
 {
-  return (param_ - hitPoint).Unit();
+  return std::vector<Vec3>(1, (param_ - hitPoint).Unit());
 }
 
 double PointLight::ToLightTime(const Vec3& hitPoint) const
 {
   return (param_ - hitPoint).Length();
+}
+
+AreaLight::AreaLight(Vec3 lightPosition, RGBColor color,
+  bool shadow, bool useSampler)
+  : Light(lightPosition, color, shadow)
+{
+  useSampler_ = useSampler;
+}
+
+
+SphereAreaLight::SphereAreaLight(Vec3 lightPosition, double radius, RGBColor color,
+  bool shadow, bool useSampler)
+  : AreaLight(lightPosition, color, shadow, useSampler), Sphere(lightPosition, radius, color)
+{
+}
+
+std::vector<Vec3> SphereAreaLight::ToLightDirection(const Vec3& hitPoint) const
+{
+  return std::vector<Vec3>(1, Vec3());
+}
+
+double SphereAreaLight::ToLightTime(const Vec3& hitPoint) const
+{
+  return 0.0;
 }

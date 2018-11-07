@@ -105,17 +105,23 @@ Scene World::Render()
           } else {
             // [TODO] ambient component and wrap everything into a shading model?
             for (Light* light : lights_) {
+              RGBColor unweightedResColor(0.0, 0.0, 0.0);
               double toLightTime = light->ToLightTime(sr.hitPosition);
               double tTemp = -1;
               ShadeRec srTemp;
-              Ray shadowRay(sr.hitPosition, light->ToLightDirection(sr.hitPosition));
-
-              bool isBlocked = geometricLayoutPtr_->Hit(
-                shadowRay, tTemp, srTemp, true, toLightTime);
-              if (!isBlocked) {
-                resColor += Shader::Diffuse(sr, *light);
-                resColor += Shader::Specular(sr, *light);
+              std::vector<Vec3> toLightDirectionSamplers = 
+                light->ToLightDirection(sr.hitPosition);
+              for (Vec3& toLightDirection : toLightDirectionSamplers) {
+                Ray shadowRay(sr.hitPosition, toLightDirection);
+              
+                bool isBlocked = geometricLayoutPtr_->Hit(
+                  shadowRay, tTemp, srTemp, true, toLightTime);
+                if (!isBlocked) {
+                  unweightedResColor += Shader::Diffuse(sr, toLightDirection, *light);
+                  unweightedResColor += Shader::Specular(sr, toLightDirection, *light);
+                }
               }
+              resColor += (unweightedResColor / toLightDirectionSamplers.size());
             }
           }
         }
