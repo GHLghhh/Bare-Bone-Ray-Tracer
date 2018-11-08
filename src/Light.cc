@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "Light.h"
 
 Light::Light(Vec3 spacialParameter, RGBColor color, bool shadow)
@@ -13,14 +15,9 @@ DirectionalLight::DirectionalLight(
 {
 }
 
-std::vector<Vec3> DirectionalLight::ToLightDirection(const Vec3& hitPoint) const
+std::vector<ToLightRecord> DirectionalLight::ToLightRecords(const Vec3& hitPoint) const
 {
-  return std::vector<Vec3>(1, param_ * -1);
-}
-
-double DirectionalLight::ToLightTime(const Vec3& hitPoint) const
-{
-  return -1;
+  return std::vector<ToLightRecord>(1, std::make_pair(param_ * -1, -1));
 }
 
 PointLight::PointLight(Vec3 lightPosition, RGBColor color, bool shadow)
@@ -28,36 +25,47 @@ PointLight::PointLight(Vec3 lightPosition, RGBColor color, bool shadow)
 {
 }
 
-std::vector<Vec3> PointLight::ToLightDirection(const Vec3& hitPoint) const
+std::vector<ToLightRecord> PointLight::ToLightRecords(const Vec3& hitPoint) const
 {
-  return std::vector<Vec3>(1, (param_ - hitPoint).Unit());
-}
-
-double PointLight::ToLightTime(const Vec3& hitPoint) const
-{
-  return (param_ - hitPoint).Length();
+  return std::vector<ToLightRecord>(1, std::make_pair((param_ - hitPoint).Unit(), (param_ - hitPoint).Length()));
 }
 
 AreaLight::AreaLight(Vec3 lightPosition, RGBColor color,
-  bool shadow, bool useSampler)
+  int numSamples, bool shadow)
   : Light(lightPosition, color, shadow)
 {
-  useSampler_ = useSampler;
+  numSamples_ = numSamples;
 }
 
 
 SphereAreaLight::SphereAreaLight(Vec3 lightPosition, double radius, RGBColor color,
-  bool shadow, bool useSampler)
-  : AreaLight(lightPosition, color, shadow, useSampler), Sphere(lightPosition, radius, color)
+  int numSamples, bool shadow)
+  : AreaLight(lightPosition, color, shadow, numSamples), Sphere(lightPosition, radius, color)
 {
+  sampler = HemisphereSampler3D(numSamples_);
 }
 
-std::vector<Vec3> SphereAreaLight::ToLightDirection(const Vec3& hitPoint) const
+std::vector<ToLightRecord> SphereAreaLight::ToLightRecords(const Vec3& hitPoint) const
 {
-  return std::vector<Vec3>(1, Vec3());
-}
+  // Create u, v, w unit vector for mapping hemisphere samples on world coordinate
+  Vec3 w = (hitPoint - position_).Unit();
+  // Variable used for generating orthogonal coordinate
+  Vec3 driftW = Vec3(
+    Vec3::Dot(Vec3(cos(M_PI_4), -sin(M_PI_4), 0.0), w),
+    Vec3::Dot(Vec3(sin(M_PI_4), cos(M_PI_4), 0.0), w),
+    Vec3::Dot(Vec3(0.0, 0.0, 1.0), w));
 
-double SphereAreaLight::ToLightTime(const Vec3& hitPoint) const
-{
-  return 0.0;
+  Vec3 u = Vec3::Cross(w, driftW).Unit();
+  Vec3 v = Vec3::Cross(w, u).Unit();
+
+  std::vector<Vec3> localCoordSamples = sampler.GenerateSamplePoints();
+
+  std::vector<ToLightRecord> res;
+  for (Vec3& sample : localCoordSamples) {
+    // use sphere center and radius to calculate the exact "light point"
+    Vec3 sampledPoint = position_ + (u * sample.x + v * sample.y + w * sample.z).Unit() * radius_;
+    Vec3 unnormalizedDirection = sampledPoint - hitPoint;
+    res.push_back(std::make_pair(unnormalizedDirection.Unit(), unnormalizedDirection.Length()));
+  }
+  return res;
 }

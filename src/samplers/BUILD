@@ -10,6 +10,16 @@ cc_library(
 )
 
 cc_library(
+    name = "HemisphereSampler3D",
+    srcs = ["HemisphereSampler3D.cc"],
+    hdrs = ["HemisphereSampler3D.h"],
+    deps = [
+        ":Sampler2D",
+        "//src/utils:Vec3"
+    ]
+)
+
+cc_library(
     name = "Sampler2D",
     srcs = ["Sampler2D.cc"],
     hdrs = ["Sampler2D.h"],

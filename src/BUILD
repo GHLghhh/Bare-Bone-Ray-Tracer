@@ -52,6 +52,7 @@ cc_library(
     hdrs = ["Light.h"],
     deps = [
         "//src/geometricObjects:Sphere",
+        "//src/samplers:HemisphereSampler3D",
         "//src/utils:RGBColor",
         "//src/utils:Vec3",
     ]
