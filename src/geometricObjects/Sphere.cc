@@ -38,4 +38,5 @@ void Sphere::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
 {
   GeometricObject::FillShadeRec(ray, t, sr);
   sr.normal = (sr.hitPosition - position_).Unit();
+  sr.objectHit = this;
 }

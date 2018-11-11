@@ -11,4 +11,5 @@ GeometricObject::FillShadeRec(
 {
   sr.color = color_;
   sr.hitPosition = ray.Position() + ray.Direction() * t;
+  sr.objectHit = this;
 }

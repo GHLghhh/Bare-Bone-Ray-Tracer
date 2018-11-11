@@ -7,6 +7,8 @@
 #include "utils/RGBColor.h"
 #include "utils/Vec3.h"
 
+// <Light position, time to light> for area lights
+// <To light direction, time to light> for non-area lights
 using ToLightRecord = std::pair<Vec3, double>;
 
 class Light {
@@ -39,9 +41,12 @@ public:
   AreaLight(Vec3 lightPosition, RGBColor color,
     int numSamples, bool shadow = true);
   virtual std::vector<ToLightRecord> ToLightRecords(const Vec3& hitPoint) const = 0;
+  virtual Vec3 Normal(const Vec3& lightPosition) = 0;
+  virtual double InvPDF(const Vec3& lightPosition) = 0;
 
 protected:
   int numSamples_;
+  double area_;
 };
 
 class SphereAreaLight : public AreaLight, public Sphere {
@@ -49,6 +54,11 @@ public:
   SphereAreaLight(Vec3 lightPosition, double radius, RGBColor color,
     int numSamples, bool shadow = true);
   std::vector<ToLightRecord> ToLightRecords(const Vec3& hitPoint) const override;
+  Vec3 Normal(const Vec3& lightPosition) override;
+  double InvPDF(const Vec3& lightPosition) override;
+protected:
+  void FillShadeRec(const Ray& ray, const double t, ShadeRec& sr) override;
 private:
-  HemisphereSampler3D sampler;
+  HemisphereSampler3D sampler_;
+  double hemisphereArea_;
 };

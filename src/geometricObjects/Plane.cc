@@ -23,4 +23,5 @@ void Plane::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
 {
   GeometricObject::FillShadeRec(ray, t, sr);
   sr.normal = normal_;
+  sr.objectHit = this;
 }

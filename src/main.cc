@@ -47,33 +47,45 @@ int main() {
     PerspectiveCamera cameraP(cp, la, up, 2);
     OrthographicCamera cameraO(cp, la, up);
     PointLight light(Vec3(5, 10, 0), RGBColor(0.5, 1.0, 1.0));
+    std::cout << "light: " << &light << std::endl;
     PointLight light2(Vec3(10, 0, 5), RGBColor(1.0, 0.5, 0.5));
+    std::cout << "light2: " << &light2 << std::endl;
 
     Sampler2D sampler = Sampler2D();
-    ViewPlane viewPlane(0.01,0.01,108,96);
+    ViewPlane viewPlane(0.01,0.01,1080,960);
 
     std::cout << "Applying world setting" << std::endl;
     world.SetGeometricLayoutType(LayoutType::GRID);
     world.SetViewPlane(&viewPlane);
     world.SetSampler(&sampler);
-    world.AddLightSource(&light);
-    world.AddLightSource(&light2);
+    // world.AddLightSource(&light);
+    // world.AddLightSource(&light2);
 
     /* Testing set */
     std::cout << "Creating geometric objects" << std::endl;
     Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
       RGBColor(0.0,1.0,0.0));
+    std::cout << "tri1: " << &triangle1 << std::endl;
     Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
       RGBColor(1.0,0.0,0.5));
+    std::cout << "tri2: " << &triangle2 << std::endl;
+    Plane plane(Vec3(0.0, -3.0, 0.0), Vec3(0.0, 1.0, 0.0), RGBColor(1.0, 1.0, 1.0));
 
-    Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
-    Sphere sphere2(Vec3(-1, -0.75, 0), 1.0, RGBColor(1.0,0.5,1.0));
+    // Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
+    SphereAreaLight sphere1(Vec3(-1, 1, 1), 0.5, RGBColor(1.0,1.0,1.0), 64);
+    std::cout << "sph1: " << &sphere1 << std::endl;
+    Sphere sphere2(Vec3(-1, -1, 0), 1.0, RGBColor(1.0,0.5,1.0));
+    std::cout << "sph2: " << &sphere2 << std::endl;
     
     std::cout << "Adding geometric objects" << std::endl;
     world.AddGeometricObject(&triangle1);
     world.AddGeometricObject(&triangle2);
     world.AddGeometricObject(&sphere1);
     world.AddGeometricObject(&sphere2);
+
+    world.AddGeometricObject(&plane);
+
+    world.AddLightSource(&sphere1);
 
     // // [TODO] check if orthographic camera is shaded correctly.
     std::cout << "Rendering orthographic scene" << std::endl;

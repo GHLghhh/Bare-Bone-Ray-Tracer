@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 
 #include "World.h"
@@ -103,21 +104,51 @@ Scene World::Render()
           if (!isHit) {
             resColor += backGroundColor;
           } else {
+            // emittedColor is 0 if it is not hitting light source
+            resColor += sr.emittedColor;
             // [TODO] ambient component and wrap everything into a shading model?
             for (Light* light : lights_) {
+              AreaLight* areaLightCast = dynamic_cast<AreaLight*>(light);
+
               RGBColor unweightedResColor(0.0, 0.0, 0.0);
               double tTemp = -1;
-              ShadeRec srTemp;
               std::vector<ToLightRecord> toLightRecords = 
                 light->ToLightRecords(sr.hitPosition);
-              for (ToLightRecord& toLightRecord : toLightRecords) {
-                Ray shadowRay(sr.hitPosition, toLightRecord.first);
+              // std::cout << "Hit position: " << sr.hitPosition << std::endl;
               
+              for (ToLightRecord& toLightRecord : toLightRecords) {
+                ShadeRec srTemp(cameraPtr_->Position());
+                // std::cout << srTemp.objectHit << std::endl;
+                // toLightDirection for area light is instantiated differently
+                Vec3 toLightDirection = (areaLightCast) ? (toLightRecord.first - sr.hitPosition).Unit() : toLightRecord.first;
+                // std::cout << toLightDirection << " : " << toLightRecord.second << std::endl;
+                Ray shadowRay(sr.hitPosition, toLightDirection);
+
+                // if (areaLightCast) {
+                //   std::cout << "Area light: " << light << std::endl;
+                // }
                 bool isBlocked = geometricLayoutPtr_->Hit(
                   shadowRay, tTemp, srTemp, true, toLightRecord.second);
+
+                // Object hit matches current light only happens in area light
+                if (isBlocked && srTemp.objectHit == light) {
+                  isBlocked = false;
+                }
                 if (!isBlocked) {
-                  unweightedResColor += Shader::Diffuse(sr, toLightRecord.first, *light);
-                  unweightedResColor += Shader::Specular(sr, toLightRecord.first, *light);
+                  if (areaLightCast) {
+                    // [TODO] Area form of rendering equation
+                    // [TODO] make diffuse and specular BRDF
+                    unweightedResColor += 
+                      Shader::Diffuse(sr, toLightDirection, *light)
+                      * Vec3::Dot(areaLightCast->Normal(toLightRecord.first), toLightDirection * -1)
+                      * Vec3::Dot(toLightDirection, sr.normal)
+                      // pow((sr.hitPosition - toLightRecord.first).Length(), 2)
+                      * areaLightCast->InvPDF(toLightRecord.first);
+                  } else {
+                    // [TODO] change it into hemisphere form
+                    unweightedResColor += Shader::Diffuse(sr, toLightDirection, *light);
+                    unweightedResColor += Shader::Specular(sr, toLightDirection, *light);
+                  }
                 }
               }
               resColor += (unweightedResColor / toLightRecords.size());

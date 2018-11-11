@@ -52,6 +52,7 @@ void Triangle::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
   double a2 = Vec3::Cross((point0_ - sr.hitPosition), (point1_ - sr.hitPosition)).Length();
   double a = a0 + a1 + a2;
   sr.normal = (pointNormal0_ * (a0 / a) + pointNormal1_ * (a1 / a) + pointNormal2_ * (a2 / a)).Unit();
+  sr.objectHit = this;
 }
 
 std::ostream& operator<< (std::ostream& out, const Triangle& obj)

@@ -21,3 +21,8 @@ RGBColor Shader::Specular(const ShadeRec& sr, const Vec3& toLightDirection, cons
   return (light.Color() * sr.color) * sr.specularCoefficient
     * pow(reflectCoefficient, sr.shininess);
 }
+
+RGBColor Shader::PhongShadingModel(const ShadeRec& sr, const Vec3& toLightDirection, const Light& light)
+{
+  return Diffuse(sr, toLightDirection, light) + Specular(sr, toLightDirection, light);
+}

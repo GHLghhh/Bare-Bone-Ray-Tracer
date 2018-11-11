@@ -35,14 +35,17 @@ AreaLight::AreaLight(Vec3 lightPosition, RGBColor color,
   : Light(lightPosition, color, shadow)
 {
   numSamples_ = numSamples;
+  area_ = 1;
 }
 
 
 SphereAreaLight::SphereAreaLight(Vec3 lightPosition, double radius, RGBColor color,
   int numSamples, bool shadow)
-  : AreaLight(lightPosition, color, shadow, numSamples), Sphere(lightPosition, radius, color)
+  : AreaLight(lightPosition, color, numSamples, shadow), Sphere(lightPosition, radius, color)
 {
-  sampler = HemisphereSampler3D(numSamples_);
+  sampler_ = HemisphereSampler3D(numSamples_);
+  area_ = 4 * M_PI * radius_ * radius_;
+  hemisphereArea_ = area_ / 2;
 }
 
 std::vector<ToLightRecord> SphereAreaLight::ToLightRecords(const Vec3& hitPoint) const
@@ -58,14 +61,30 @@ std::vector<ToLightRecord> SphereAreaLight::ToLightRecords(const Vec3& hitPoint)
   Vec3 u = Vec3::Cross(w, driftW).Unit();
   Vec3 v = Vec3::Cross(w, u).Unit();
 
-  std::vector<Vec3> localCoordSamples = sampler.GenerateSamplePoints();
+  std::vector<Vec3> localCoordSamples = sampler_.GenerateSamplePoints();
 
   std::vector<ToLightRecord> res;
   for (Vec3& sample : localCoordSamples) {
     // use sphere center and radius to calculate the exact "light point"
     Vec3 sampledPoint = position_ + (u * sample.x + v * sample.y + w * sample.z).Unit() * radius_;
-    Vec3 unnormalizedDirection = sampledPoint - hitPoint;
-    res.push_back(std::make_pair(unnormalizedDirection.Unit(), unnormalizedDirection.Length()));
+    res.push_back(std::make_pair(sampledPoint, (sampledPoint - hitPoint).Length()));
   }
   return res;
+}
+
+void SphereAreaLight::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
+{
+  Sphere::FillShadeRec(ray, t, sr);
+  sr.emittedColor = Light::color_;
+  sr.objectHit = this;
+}
+
+double SphereAreaLight::InvPDF(const Vec3& lightPosition)
+{
+  return hemisphereArea_;
+}
+
+Vec3 SphereAreaLight::Normal(const Vec3& lightPosition)
+{
+  return (lightPosition - position_).Unit();
 }
