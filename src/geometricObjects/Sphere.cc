@@ -3,8 +3,8 @@
 #include "Sphere.h"
 #include "../utils/constants.h"
 
-Sphere::Sphere(Vec3 position, double radius, RGBColor color)
-  : GeometricObject(position, color)
+Sphere::Sphere(Vec3 position, double radius, Material* material)
+  : GeometricObject(position, material)
 {
   radius_ = radius;
   for (int i = 0; i < 3; i++) {

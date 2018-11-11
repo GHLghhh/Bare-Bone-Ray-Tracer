@@ -33,7 +33,8 @@ std::vector<Triangle> LoadFromObjFile(std::string fileName)
           Vec3 vertex1 = vertices[((int)value1)-1];
           Vec3 vertex2 = vertices[((int)value2)-1];
           Vec3 vertex3 = vertices[((int)value3)-1];
-          meshes.push_back(Triangle(vertex1, vertex2, vertex3, RGBColor(1.0, 1.0, 1.0)));
+          // [TODO] fix material + mesh
+          meshes.push_back(Triangle(vertex1, vertex2, vertex3, nullptr));
         }
         break;
       default:

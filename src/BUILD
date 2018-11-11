@@ -11,6 +11,7 @@ cc_library(
         "//src/geometricObjects:Plane",
         "//src/geometricObjects:Sphere",
         "//src/geometricObjects:Triangle",
+        "//src/materials:Material",
         "//src/samplers:MultiJitteredSampler2D",
         "//src/samplers:Sampler2D",
         "//src/utils/io:loadMeshes",
@@ -52,6 +53,7 @@ cc_library(
     hdrs = ["Light.h"],
     deps = [
         "//src/geometricObjects:Sphere",
+        "//src/materials:Material",
         "//src/samplers:HemisphereSampler3D",
         "//src/utils:RGBColor",
         "//src/utils:Vec3",

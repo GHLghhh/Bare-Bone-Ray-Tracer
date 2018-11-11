@@ -1,7 +1,7 @@
 #include "GeometricObject.h"
 
-GeometricObject::GeometricObject(Vec3 position, RGBColor color)
-  : Object(position), boundingBox_(position, position), color_(color)
+GeometricObject::GeometricObject(Vec3 position, Material* material)
+  : Object(position), boundingBox_(position, position), material_(material)
 {  
 }
 
@@ -9,7 +9,7 @@ void
 GeometricObject::FillShadeRec(
   const Ray& ray, const double t, ShadeRec& sr)
 {
-  sr.color = color_;
+  sr.material = material_;
   sr.hitPosition = ray.Position() + ray.Direction() * t;
   sr.objectHit = this;
 }

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Plane.h"
+#include "../materials/Material.h"
 
 class Triangle : public Plane {
 public:
   Triangle() = default;
-  Triangle(Vec3 point0, Vec3 point1, Vec3 point2, RGBColor color);
+  Triangle(Vec3 point0, Vec3 point1, Vec3 point2, Material* material);
   ~Triangle() = default;
   bool Hit(const Ray& ray, double& t, ShadeRec& s) override;
 

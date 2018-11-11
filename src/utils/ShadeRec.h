@@ -3,6 +3,8 @@
 #include "RGBColor.h"
 #include "Vec3.h"
 
+#include "../materials/Material.h"
+
 class ShadeRec {
 public:
   ShadeRec() = default;
@@ -11,7 +13,6 @@ public:
 
   ShadeRec& operator= (const ShadeRec& rhs);
 
-  RGBColor color;
   Vec3 normal;
   Vec3 hitPosition;
   Vec3 eyePosition;
@@ -22,9 +23,5 @@ public:
   //          if the object being hit is the same area light
   //          when we check shadowing when area light is involved
   void* objectHit;
-  double diffuseCoefficient;
-  double specularCoefficient;
-  double shininess;
-  // For area light
-  Vec3 emittedColor;
+  Material* material;
 };

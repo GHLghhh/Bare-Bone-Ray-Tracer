@@ -49,9 +49,10 @@ protected:
   double area_;
 };
 
+// [TODO] make material natural in area light
 class SphereAreaLight : public AreaLight, public Sphere {
 public:
-  SphereAreaLight(Vec3 lightPosition, double radius, RGBColor color,
+  SphereAreaLight(Vec3 lightPosition, double radius, Material* material,
     int numSamples, bool shadow = true);
   std::vector<ToLightRecord> ToLightRecords(const Vec3& hitPoint) const override;
   Vec3 Normal(const Vec3& lightPosition) override;

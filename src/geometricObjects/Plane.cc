@@ -1,8 +1,8 @@
 #include "Plane.h"
 #include "../utils/constants.h"
 
-Plane::Plane(Vec3 position, Vec3 normal, RGBColor color)
-  : GeometricObject(position, color)
+Plane::Plane(Vec3 position, Vec3 normal, Material* material)
+  : GeometricObject(position, material)
 {
   normal_ = normal.Unit();
 }

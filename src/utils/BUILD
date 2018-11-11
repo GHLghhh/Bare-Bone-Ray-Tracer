@@ -21,6 +21,7 @@ cc_library(
     deps = [
         ":RGBColor",
         ":Vec3",
+        "//src/materials:Material",
     ]
 )
 

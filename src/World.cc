@@ -105,7 +105,7 @@ Scene World::Render()
             resColor += backGroundColor;
           } else {
             // emittedColor is 0 if it is not hitting light source
-            resColor += sr.emittedColor;
+            resColor += sr.material->emittedColor;
             // [TODO] ambient component and wrap everything into a shading model?
             for (Light* light : lights_) {
               AreaLight* areaLightCast = dynamic_cast<AreaLight*>(light);
@@ -131,6 +131,7 @@ Scene World::Render()
                   shadowRay, tTemp, srTemp, true, toLightRecord.second);
 
                 // Object hit matches current light only happens in area light
+                // [TODO] if block by other area light, will have shadow. Check why it happens
                 if (isBlocked && srTemp.objectHit == light) {
                   isBlocked = false;
                 }

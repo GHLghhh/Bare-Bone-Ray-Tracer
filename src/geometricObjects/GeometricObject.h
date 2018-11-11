@@ -2,7 +2,7 @@
 
 #include "../Object.h"
 #include "../Ray.h"
-#include "../utils/RGBColor.h"
+#include "../materials/Material.h"
 #include "../utils/ShadeRec.h"
 
 // <minPosition, maxPosition>
@@ -11,7 +11,7 @@ using BBox = std::pair<Vec3, Vec3>;
 class GeometricObject : public Object {
 public:
   GeometricObject() = default;
-  GeometricObject(Vec3 position, RGBColor color);
+  GeometricObject(Vec3 position, Material* material);
   ~GeometricObject() = default;
   virtual bool Hit(const Ray& ray, double& t, ShadeRec& s) = 0;
   
@@ -20,5 +20,5 @@ public:
   BBox boundingBox_;
 protected:
   virtual void FillShadeRec(const Ray& ray, const double t, ShadeRec& sr);
-  RGBColor color_;
+  Material* material_;
 };

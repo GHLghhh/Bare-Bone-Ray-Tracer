@@ -6,6 +6,7 @@ cc_library(
     hdrs = ["Shader.h"],
     deps = [
         "//src:Light",
+        "//src/materials:Material",
         "//src/utils:RGBColor",
         "//src/utils:ShadeRec",
     ]

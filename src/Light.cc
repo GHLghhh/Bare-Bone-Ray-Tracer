@@ -39,9 +39,9 @@ AreaLight::AreaLight(Vec3 lightPosition, RGBColor color,
 }
 
 
-SphereAreaLight::SphereAreaLight(Vec3 lightPosition, double radius, RGBColor color,
+SphereAreaLight::SphereAreaLight(Vec3 lightPosition, double radius, Material* material,
   int numSamples, bool shadow)
-  : AreaLight(lightPosition, color, numSamples, shadow), Sphere(lightPosition, radius, color)
+  : AreaLight(lightPosition, material->emittedColor, numSamples, shadow), Sphere(lightPosition, radius, material)
 {
   sampler_ = HemisphereSampler3D(numSamples_);
   area_ = 4 * M_PI * radius_ * radius_;
@@ -75,7 +75,6 @@ std::vector<ToLightRecord> SphereAreaLight::ToLightRecords(const Vec3& hitPoint)
 void SphereAreaLight::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
 {
   Sphere::FillShadeRec(ray, t, sr);
-  sr.emittedColor = Light::color_;
   sr.objectHit = this;
 }
 
