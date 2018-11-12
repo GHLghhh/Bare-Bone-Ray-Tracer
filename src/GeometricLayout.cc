@@ -28,26 +28,17 @@ void GeometricLayout::DeleteObjects()
 }
 
 bool GeometricLayout::Hit(
-  const Ray& ray, double& t, ShadeRec& sr, bool earlyStopping, double stopT)
+  const Ray& ray, double& t, ShadeRec& sr,
+  bool earlyStopping, double stopT, bool inverseNormal)
 {
   UpdateLayout();
   // [TODO] eyePosition assignment is wierd
   t = -1;
   for (GeometricObject* objPtr : geometricObjects_) {
-    double tTemp = t;
-    ShadeRec srTemp(sr.eyePosition);
-    // Hit
-    if (objPtr->Hit(ray, tTemp, srTemp)) {
-      // Check if closer
-      if (t == -1 || tTemp < t) {
-        t = tTemp;
-        sr = srTemp;
-        
-        // check early stopping (for shadow ray)
-        if (earlyStopping && (stopT == -1 || t < stopT)) {
-          return true;
-        }
-      }
+    // hit and check early stopping (for shadow ray)
+    if (UpdateHit(objPtr, ray, t, sr, inverseNormal) && earlyStopping
+      && (stopT == -1 || t < stopT)) {
+      return true;
     }
   }
   return (t != -1);
@@ -75,6 +66,24 @@ void GeometricLayout::ExtendLayoutBBox(const BBox& objBBox)
   }
 }
 
+bool GeometricLayout::UpdateHit(
+  GeometricObject* objPtr, const Ray& ray, double& t, ShadeRec& sr, bool inverseNormal)
+{
+  double tTemp = t;
+  ShadeRec srTemp(sr.eyePosition);
+  int inverse = inverseNormal ? -1 : 1;
+  // Hit
+  if (objPtr->Hit(ray, tTemp, srTemp)) {
+    // Check if closer
+    if ((t == -1 || tTemp < t)  && Vec3::Dot(srTemp.normal, ray.Direction()) * inverse < 0) {
+      t = tTemp;
+      sr = srTemp;
+      return true;
+    }
+  }
+  return false;
+}
+
 GridLayout::GridLayout()
   : GeometricLayout()
 {
@@ -86,7 +95,8 @@ GridLayout::GridLayout(std::vector<GeometricObject*>& geometricObjects)
 }
 
 bool GridLayout::Hit(
-  const Ray& ray, double& t, ShadeRec& sr, bool earlyStopping, double stopT)
+  const Ray& ray, double& t, ShadeRec& sr,
+  bool earlyStopping, double stopT, bool inverseNormal)
 {
   UpdateLayout();
   // [TODO] eyePosition assignment is wierd
@@ -156,43 +166,33 @@ bool GridLayout::Hit(
         && (int)startIdx.x >= 0 && (int)startIdx.y >= 0 && (int)startIdx.z >= 0) {
         if (gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z].size() != 0) {
           for (auto& objPtr : gridList[(int)startIdx.x * (int)n_.y * (int)n_.z + (int)startIdx.y * (int)n_.z + (int)startIdx.z]) {
-            double tTemp = t;
-            ShadeRec srTemp(sr.eyePosition);
-            // Hit
-            if (objPtr->Hit(ray, tTemp, srTemp)) {
-              // Check if closer
-              if (t == -1 || tTemp < t) {
-                t = tTemp;
-                sr = srTemp;
-                
-                // check early stopping (for shadow ray)
-                if (earlyStopping && (stopT == -1 || t < stopT)) {
-                  return true;
-                }
-              }
+            // Hit and check early stopping (for shadow ray)
+            if (UpdateHit(objPtr, ray, t, sr, inverseNormal) && earlyStopping
+              && (stopT == -1 || t < stopT)) {
+              return true;
             }
           }
         }
         if (nextT.x < nextT.y && nextT.x < nextT.z) {
           if (t != -1 && t <= nextT.x)
-            return HitOutlier(ray, t, sr);
+            return HitOutlier(ray, t, sr, inverseNormal);
           nextT.x += deltaT.x;
           startIdx.x += (directionSign.x != 1.0) ? -1 : 1;
         } else if (nextT.y < nextT.z) {
           if (t != -1 && t <= nextT.y)
-            return HitOutlier(ray, t, sr);
+            return HitOutlier(ray, t, sr, inverseNormal);
           nextT.y += deltaT.y;
           startIdx.y += (directionSign.y != 1.0) ? -1 : 1;
         } else {
           if (t != -1 && t <= nextT.z)
-            return HitOutlier(ray, t, sr);
+            return HitOutlier(ray, t, sr, inverseNormal);
           nextT.z += deltaT.z;
           startIdx.z += (directionSign.z != 1.0) ? -1 : 1;
         }
       }
     }
   }
-  return HitOutlier(ray, t, sr);
+  return HitOutlier(ray, t, sr, inverseNormal);
 }
 
 void GridLayout::UpdateLayout()
@@ -261,19 +261,13 @@ void GridLayout::UpdateLayout()
   }
 }
 
-bool GridLayout::HitOutlier(const Ray& ray, double& t, ShadeRec& sr)
+bool GridLayout::HitOutlier(const Ray& ray, double& t, ShadeRec& sr, bool inverseNormal)
 {
   for (GeometricObject* objPtr : outliers_) {
     double tTemp = t;
     ShadeRec srTemp(sr.eyePosition);
     // Hit
-    if (objPtr->Hit(ray, tTemp, srTemp)) {
-      // Check if closer
-      if (t == -1 || tTemp < t) {
-        t = tTemp;
-        sr = srTemp;
-      }
-    }
+    UpdateHit(objPtr, ray, t, sr, inverseNormal);
   }
   return (t != -1);
 }

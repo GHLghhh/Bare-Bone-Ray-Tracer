@@ -69,40 +69,82 @@ int main() {
     Material white = Material(RGBColor(1.0, 1.0, 1.0));
     Material whiteLightSource = Material();
     whiteLightSource.SimpleLightSource(RGBColor(1.0, 1.0, 1.0));
+    Material transparentMaterial = Material();
+    transparentMaterial.SimpleTransparentMaterial();
+
+    Material mirror = Material();
+    mirror.SimpleMirror();
 
     std::cout << "Creating geometric objects" << std::endl;
-    Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
-      &green);
-    std::cout << "tri1: " << &triangle1 << std::endl;
-    Triangle triangle2(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
+    // Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
+    //   &green);
+    // Triangle triangle1_(Vec3(1, 1, 0), Vec3(1, -1, 0), Vec3(-1, -1, 0),
+    //   &green);
+    Sphere sph3(Vec3(-3.5, -2.0, -1.0), 1.0, &green);
+    // std::cout << "tri1: " << &triangle1 << std::endl;
+    Triangle triangle2(Vec3(2, 0, 0), Vec3(2, -3, -1), Vec3(0, -2, 1),
       &redPurple);
-    std::cout << "tri2: " << &triangle2 << std::endl;
+    Triangle triangle2_(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
+      &redPurple);
+    // std::cout << "tri2: " << &triangle2 << std::endl;
+
+    Triangle squareMirrorPart1(Vec3(-2, -2, -1), Vec3(2, -2, -1), Vec3(2, 2, -1),
+      &mirror);
+    Triangle squareMirrorPart2(Vec3(2, 2, -1), Vec3(-2, 2, -1), Vec3(-2, -2, -1),
+      &mirror);
+    Triangle squareMirrorPart1_(Vec3(2, 2, -1), Vec3(2, -2, -1), Vec3(-2, -2, -1),
+      &white);
+    Triangle squareMirrorPart2_(Vec3(-2, -2, -1), Vec3(-2, 2, -1), Vec3(2, 2, -1),
+      &white);
+
     Plane plane(Vec3(0.0, -3.0, 0.0), Vec3(0.0, 1.0, 0.0), &white);
+    Plane plane2(Vec3(0.0, 3.0, 0.0), Vec3(0.0, -1.0, 0.0), &redPurple);
+    Plane plane3(Vec3(0.0, 0.0, -1.5), Vec3(0.0, 0.0, 1.0), &white);
+    Plane plane4(Vec3(0.0, 0.0, 2.5), Vec3(0.0, 0.0, -1.0), &lightRedPurple);
+    Plane plane5(Vec3(-3.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), &white);
+    Plane plane6(Vec3(3.0, 0.0, 0.0), Vec3(-1.0, 0.0, 0.0), &white);
 
     // Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
     SphereAreaLight sphere1(Vec3(-1, 1, 1), 0.5, &whiteLightSource, 64);
     std::cout << "sph1: " << &sphere1 << std::endl;
-    Sphere sphere2(Vec3(-1, -1, 0), 1.0, &lightRedPurple);
+    Sphere sphere2(Vec3(-1.5, -1.5, 0.0), 1.0, &transparentMaterial);
     std::cout << "sph2: " << &sphere2 << std::endl;
     
     std::cout << "Adding geometric objects" << std::endl;
-    world.AddGeometricObject(&triangle1);
+    // world.AddGeometricObject(&triangle1);
     world.AddGeometricObject(&triangle2);
+    // world.AddGeometricObject(&triangle1_);
+    world.AddGeometricObject(&triangle2_);
     world.AddGeometricObject(&sphere1);
     world.AddGeometricObject(&sphere2);
+    world.AddGeometricObject(&sph3);
+
+    world.AddGeometricObject(&squareMirrorPart1);
+    world.AddGeometricObject(&squareMirrorPart2);
+    world.AddGeometricObject(&squareMirrorPart1_);
+    world.AddGeometricObject(&squareMirrorPart2_);
 
     world.AddGeometricObject(&plane);
+    world.AddGeometricObject(&plane2);
+    world.AddGeometricObject(&plane3);
+    world.AddGeometricObject(&plane4);
+    // world.AddGeometricObject(&plane5);
+    // world.AddGeometricObject(&plane6);
 
     world.AddLightSource(&sphere1);
 
     // // [TODO] check if orthographic camera is shaded correctly.
-    std::cout << "Rendering orthographic scene" << std::endl;
-    world.SetCamera(&cameraO);
-    time_t start = time(0);
-    Scene res = world.Render();
-    double seconds = difftime(time(0), start);
-    ToPNG("outs/orthographic.png", res);
-    std::cout << "Rendered orthographic in " << seconds << " seconds"<< std::endl;
+    time_t start;
+    double seconds;
+    Scene res;
+
+    // std::cout << "Rendering orthographic scene" << std::endl;
+    // world.SetCamera(&cameraO);
+    // start = time(0);
+    // res = world.Render();
+    // seconds = difftime(time(0), start);
+    // ToPNG("outs/orthographic.png", res);
+    // std::cout << "Rendered orthographic in " << seconds << " seconds"<< std::endl;
 
     std::cout << "Rendering perspective scene" << std::endl;
     world.SetCamera(&cameraP);

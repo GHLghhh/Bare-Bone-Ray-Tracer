@@ -95,6 +95,7 @@ cc_library(
         "//src/geometricObjects:GeometricObject",
         "//src/samplers:Sampler2D",
         "//src/shaders:Shader",
-        "//src/utils:constants"
+        "//src/utils:constants",
+        "//src/utils:ShadeRec"
     ]
 )

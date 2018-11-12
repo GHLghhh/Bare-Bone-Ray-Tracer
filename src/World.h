@@ -8,7 +8,7 @@
 #include "Light.h"
 #include "geometricObjects/GeometricObject.h"
 #include "samplers/Sampler2D.h"
-
+#include "utils/ShadeRec.h"
 
 using Scene = std::vector<std::vector<RGBColor>>;
 
@@ -33,6 +33,12 @@ public:
 private:
   void ConvertFromExistingLayout(
     LayoutType type, std::vector<GeometricObject*> layoutObjs);
+
+  RGBColor TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
+  RGBColor TraceRayInObject(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
+  RGBColor DirectIllumination(const ShadeRec& sr);
+  RGBColor IndirectIllumination(const ShadeRec& sr, const int currentDepth, const int recursionDepth, int inverseNormal = 1);
+
   RGBColor backGroundColor;
   Camera* cameraPtr_;
   ViewPlane* viewPlanePtr_;

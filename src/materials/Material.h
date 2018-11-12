@@ -11,6 +11,8 @@ public:
   Material(RGBColor materialColor);
   ~Material() = default;
 
+  bool SimpleMirror();
+  bool SimpleTransparentMaterial();
   bool SimpleLightSource(RGBColor lightColor);
 
   Material& operator= (const Material& rhs);
@@ -27,5 +29,7 @@ public:
   RGBColor emittedColor;
   double diffuseCoefficient;
   double specularCoefficient;
+  double transmissiveCoefficient;
+  double indexOfRefraction;
   double shininess;
 };

@@ -21,7 +21,8 @@ public:
   ~GeometricLayout() = default;
   virtual bool Hit(
     const Ray& ray, double& t, ShadeRec& sr,
-    bool earlyStopping = false, double stopT = -1);
+    bool earlyStopping = false, double stopT = -1,
+    bool inverseNormal = false);
 
   // [TODO] make it more general, something like nested layout
   void AddObject(GeometricObject* objPtr);
@@ -32,6 +33,9 @@ protected:
   // Update implicitly
   virtual void UpdateLayout();
   void ExtendLayoutBBox(const BBox& objBBox);
+  bool UpdateHit(
+    GeometricObject* objPtr, const Ray& ray,
+    double& t, ShadeRec& sr, bool inverseNormal);
 
   bool layoutUpdated;
   BBox layoutBoundingBox_;
@@ -45,10 +49,11 @@ public:
   ~GridLayout() = default;
   bool Hit(
     const Ray& ray, double& t, ShadeRec& sr,
-    bool earlyStopping = false, double stopT = -1) override;
+    bool earlyStopping = false, double stopT = -1,
+    bool inverseNormal = false) override;
 private:
   void UpdateLayout() override;
-  bool HitOutlier(const Ray& ray, double& t, ShadeRec& sr);
+  bool HitOutlier(const Ray& ray, double& t, ShadeRec& sr, bool inverseNormal);
   Vec3 CalculateFRatio(const Vec3& position);
   std::unordered_map<uint64_t, std::vector<GeometricObject*>> grids_;
   std::vector<std::vector<GeometricObject*>> gridList;
