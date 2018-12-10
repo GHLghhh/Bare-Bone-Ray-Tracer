@@ -1,6 +1,7 @@
 #include "Sampler2D.h"
 
-Sampler2D::Sampler2D() : numSamplesPerRow_(1), numSamplesPerCol_(1)
+Sampler2D::Sampler2D()
+  : numSamplesPerRow_(1), numSamplesPerCol_(1)
 {
 }
 
