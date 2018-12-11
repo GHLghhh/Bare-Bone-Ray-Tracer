@@ -6,6 +6,27 @@ cc_library(
 )
 
 cc_library(
+    name = "predefinedScenes",
+    srcs = ["predefinedScenes.h"],
+    deps = [
+        "//src:Ray",
+        "//src:World",
+        "//src/thirdParty:png",
+        "//src/thirdParty:rgbapixel",
+        "//src/geometricObjects:Plane",
+        "//src/geometricObjects:Sphere",
+        "//src/geometricObjects:Triangle",
+        "//src/materials:Material",
+        "//src/materials:Checker3D",
+        "//src/samplers:MultiJitteredSampler2D",
+        "//src/samplers:Sampler2D",
+        "//src/utils/io:loadMeshes",
+        ":RGBColor",
+        ":Vec3",
+    ],
+)
+
+cc_library(
     name = "RGBColor",
     srcs = ["RGBColor.cc"],
     hdrs = ["RGBColor.h"],

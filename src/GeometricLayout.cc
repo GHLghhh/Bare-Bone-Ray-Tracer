@@ -41,7 +41,7 @@ bool GeometricLayout::Hit(
       return true;
     }
   }
-  return (t != -1);
+  return (t > 0) && (stopT == -1 || t < stopT);
 }
 
 void GeometricLayout::UpdateLayout()
@@ -75,6 +75,9 @@ bool GeometricLayout::UpdateHit(
   // Hit
   if (objPtr->Hit(ray, tTemp, srTemp)) {
     // Check if closer
+    // [TODO] correct inverse here, because taking one as hit
+    // even if dot product is negative is easier to model some scene
+    // (ex. lighting at inner side of a ring)
     if ((t == -1 || tTemp < t)  && Vec3::Dot(srTemp.normal, ray.Direction()) * inverse < 0) {
       t = tTemp;
       sr = srTemp;
@@ -175,24 +178,25 @@ bool GridLayout::Hit(
         }
         if (nextT.x < nextT.y && nextT.x < nextT.z) {
           if (t != -1 && t <= nextT.x)
-            return HitOutlier(ray, t, sr, inverseNormal);
+            return HitOutlier(ray, t, sr, inverseNormal) && (stopT == -1 || t < stopT);
           nextT.x += deltaT.x;
           startIdx.x += (directionSign.x != 1.0) ? -1 : 1;
         } else if (nextT.y < nextT.z) {
           if (t != -1 && t <= nextT.y)
-            return HitOutlier(ray, t, sr, inverseNormal);
+            return HitOutlier(ray, t, sr, inverseNormal) && (stopT == -1 || t < stopT);
           nextT.y += deltaT.y;
           startIdx.y += (directionSign.y != 1.0) ? -1 : 1;
         } else {
           if (t != -1 && t <= nextT.z)
-            return HitOutlier(ray, t, sr, inverseNormal);
+            return HitOutlier(ray, t, sr, inverseNormal) && (stopT == -1 || t < stopT);
           nextT.z += deltaT.z;
           startIdx.z += (directionSign.z != 1.0) ? -1 : 1;
         }
       }
     }
   }
-  return HitOutlier(ray, t, sr, inverseNormal);
+  // [TODO] awkward solution to "blocking" behind the light
+  return HitOutlier(ray, t, sr, inverseNormal) && (stopT == -1 || t < stopT);
 }
 
 void GridLayout::UpdateLayout()
@@ -269,7 +273,7 @@ bool GridLayout::HitOutlier(const Ray& ray, double& t, ShadeRec& sr, bool invers
     // Hit
     UpdateHit(objPtr, ray, t, sr, inverseNormal);
   }
-  return (t != -1);
+  return (t > 0);
 }
 
 Vec3 GridLayout::CalculateFRatio(const Vec3& position)

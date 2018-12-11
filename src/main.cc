@@ -1,158 +1,125 @@
-#include <iostream>
-#include <time.h>
-
-#include "thirdParty/png.h"
-#include "thirdParty/rgbapixel.h"
-
-#include "Ray.h"
-#include "World.h"
-#include "geometricObjects/Plane.h"
-#include "geometricObjects/Sphere.h"
-#include "geometricObjects/Triangle.h"
-#include "materials/Material.h"
-#include "samplers/MultiJitteredSampler2D.h"
-#include "samplers/Sampler2D.h"
-#include "utils/io/loadMeshes.h"
-#include "utils/RGBColor.h"
-#include "utils/Vec3.h"
+#include "utils/predefinedScenes.h"
 
 static bool DEBUG_BUILD = true;
 
-void ToPNG(const std::string& filename, const Scene& scene)
-{
-  // [TODO] input checking
-  int width = scene.size();
-  int height = scene[0].size();
-  PNG out(width, height);
-  // PNG lib use (0,0) as upper-left corner, y++ goes down and x++ goes right
-  // Ray tracer use (0,0) as bottom-left corner, y++ goes up and x++ goes right
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-      RGBColor pixel = scene[x][y].MaxToOne().To8Bit();
-      *out(x, (height-1)-y) = RGBAPixel(pixel.x, pixel.y, pixel.z);
-    }
-  }
-  out.writeToFile(filename);
-}
-
 int main() {
-  /* Initialize world */
-  World world = World();
-
   if (DEBUG_BUILD) {
-    std::cout << "Initializing world setting" << std::endl;
-    Vec3 cp(0,0, 2);
-    Vec3 la(0,0,-1);
-    Vec3 up(0,1,0);
+    // MP3("outs/mp3.png");
+    MP4("outs/mp4.png");
 
-    PerspectiveCamera cameraP(cp, la, up, 2);
-    OrthographicCamera cameraO(cp, la, up);
-    PointLight light(Vec3(5, 10, 0), RGBColor(0.5, 1.0, 1.0));
-    std::cout << "light: " << &light << std::endl;
-    PointLight light2(Vec3(10, 0, 5), RGBColor(1.0, 0.5, 0.5));
-    std::cout << "light2: " << &light2 << std::endl;
+    // std::cout << "Initializing world setting" << std::endl;
+    // Vec3 cp(0,0, 2);
+    // Vec3 la(0,0,-1);
+    // Vec3 up(0,1,0);
 
-    Sampler2D sampler = Sampler2D();
-    ViewPlane viewPlane(0.01,0.01,1080,960);
+    // PerspectiveCamera cameraP(cp, la, up, 2);
+    // OrthographicCamera cameraO(cp, la, up);
+    // PointLight light(Vec3(5, 10, 0), RGBColor(0.5, 1.0, 1.0));
+    // std::cout << "light: " << &light << std::endl;
+    // PointLight light2(Vec3(10, 0, 5), RGBColor(1.0, 0.5, 0.5));
+    // std::cout << "light2: " << &light2 << std::endl;
 
-    std::cout << "Applying world setting" << std::endl;
-    world.SetGeometricLayoutType(LayoutType::GRID);
-    world.SetViewPlane(&viewPlane);
-    world.SetSampler(&sampler);
-    // world.AddLightSource(&light);
-    // world.AddLightSource(&light2);
+    // Sampler2D sampler = Sampler2D();
+    // ViewPlane viewPlane(0.01,0.01,1080,960);
 
-    /* Testing set */
-    Material green = Material(RGBColor(0.0,1.0,0.0));
-    Material redPurple = Material(RGBColor(1.0,0.0,0.5));
-    Material lightRedPurple = Material(RGBColor(1.0,0.5,1.0));
-    Material white = Material(RGBColor(1.0, 1.0, 1.0));
-    Material whiteLightSource = Material();
-    whiteLightSource.SimpleLightSource(RGBColor(1.0, 1.0, 1.0));
-    Material transparentMaterial = Material();
-    transparentMaterial.SimpleTransparentMaterial();
+    // std::cout << "Applying world setting" << std::endl;
+    // world.SetGeometricLayoutType(LayoutType::GRID);
+    // world.SetViewPlane(&viewPlane);
+    // world.SetSampler(&sampler);
+    // // world.AddLightSource(&light);
+    // // world.AddLightSource(&light2);
 
-    Material mirror = Material();
-    mirror.SimpleMirror();
+    // /* Testing set */
+    // Material green = Material(RGBColor(0.0,1.0,0.0));
+    // Material redPurple = Material(RGBColor(1.0,0.0,0.5));
+    // Material lightRedPurple = Material(RGBColor(1.0,0.5,1.0));
+    // Material white = Material(RGBColor(1.0, 1.0, 1.0));
+    // Material whiteLightSource = Material();
+    // whiteLightSource.SimpleLightSource(RGBColor(1.0, 1.0, 1.0));
+    // Material transparentMaterial = Material();
+    // transparentMaterial.SimpleTransparentMaterial();
 
-    std::cout << "Creating geometric objects" << std::endl;
-    // Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
-    //   &green);
-    // Triangle triangle1_(Vec3(1, 1, 0), Vec3(1, -1, 0), Vec3(-1, -1, 0),
-    //   &green);
-    Sphere sph3(Vec3(-3.5, -2.0, -1.0), 1.0, &green);
-    // std::cout << "tri1: " << &triangle1 << std::endl;
-    Triangle triangle2(Vec3(2, 0, 0), Vec3(2, -3, -1), Vec3(0, -2, 1),
-      &redPurple);
-    Triangle triangle2_(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
-      &redPurple);
-    // std::cout << "tri2: " << &triangle2 << std::endl;
+    // Material mirror = Material();
+    // mirror.SimpleMirror();
 
-    Triangle squareMirrorPart1(Vec3(-2, -2, -1), Vec3(2, -2, -1), Vec3(2, 2, -1),
-      &mirror);
-    Triangle squareMirrorPart2(Vec3(2, 2, -1), Vec3(-2, 2, -1), Vec3(-2, -2, -1),
-      &mirror);
-    Triangle squareMirrorPart1_(Vec3(2, 2, -1), Vec3(2, -2, -1), Vec3(-2, -2, -1),
-      &white);
-    Triangle squareMirrorPart2_(Vec3(-2, -2, -1), Vec3(-2, 2, -1), Vec3(2, 2, -1),
-      &white);
+    // std::cout << "Creating geometric objects" << std::endl;
+    // // Triangle triangle1(Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0),
+    // //   &green);
+    // // Triangle triangle1_(Vec3(1, 1, 0), Vec3(1, -1, 0), Vec3(-1, -1, 0),
+    // //   &green);
+    // Sphere sph3(Vec3(-3.5, -2.0, -1.0), 1.0, &green);
+    // // std::cout << "tri1: " << &triangle1 << std::endl;
+    // Triangle triangle2(Vec3(2, 0, 0), Vec3(2, -3, -1), Vec3(0, -2, 1),
+    //   &redPurple);
+    // Triangle triangle2_(Vec3(0, -2, 1), Vec3(2, -3, -1), Vec3(2, 0, 0),
+    //   &redPurple);
+    // // std::cout << "tri2: " << &triangle2 << std::endl;
 
-    Plane plane(Vec3(0.0, -3.0, 0.0), Vec3(0.0, 1.0, 0.0), &white);
-    Plane plane2(Vec3(0.0, 3.0, 0.0), Vec3(0.0, -1.0, 0.0), &redPurple);
-    Plane plane3(Vec3(0.0, 0.0, -1.5), Vec3(0.0, 0.0, 1.0), &white);
-    Plane plane4(Vec3(0.0, 0.0, 2.5), Vec3(0.0, 0.0, -1.0), &lightRedPurple);
-    Plane plane5(Vec3(-3.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), &white);
-    Plane plane6(Vec3(3.0, 0.0, 0.0), Vec3(-1.0, 0.0, 0.0), &white);
+    // Triangle squareMirrorPart1(Vec3(-2, -2, -1), Vec3(2, -2, -1), Vec3(2, 2, -1),
+    //   &mirror);
+    // Triangle squareMirrorPart2(Vec3(2, 2, -1), Vec3(-2, 2, -1), Vec3(-2, -2, -1),
+    //   &mirror);
+    // Triangle squareMirrorPart1_(Vec3(2, 2, -1), Vec3(2, -2, -1), Vec3(-2, -2, -1),
+    //   &white);
+    // Triangle squareMirrorPart2_(Vec3(-2, -2, -1), Vec3(-2, 2, -1), Vec3(2, 2, -1),
+    //   &white);
 
-    // Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
-    SphereAreaLight sphere1(Vec3(-1, 1, 1), 0.5, &whiteLightSource, 64);
-    std::cout << "sph1: " << &sphere1 << std::endl;
-    Sphere sphere2(Vec3(-1.5, -1.5, 0.0), 1.0, &transparentMaterial);
-    std::cout << "sph2: " << &sphere2 << std::endl;
+    // Plane plane(Vec3(0.0, -3.0, 0.0), Vec3(0.0, 1.0, 0.0), &white);
+    // Plane plane2(Vec3(0.0, 3.0, 0.0), Vec3(0.0, -1.0, 0.0), &redPurple);
+    // Plane plane3(Vec3(0.0, 0.0, -1.5), Vec3(0.0, 0.0, 1.0), &white);
+    // Plane plane4(Vec3(0.0, 0.0, 2.5), Vec3(0.0, 0.0, -1.0), &lightRedPurple);
+    // Plane plane5(Vec3(-3.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), &white);
+    // Plane plane6(Vec3(3.0, 0.0, 0.0), Vec3(-1.0, 0.0, 0.0), &white);
+
+    // // Sphere sphere1(Vec3(-1, 0.75, 0), 1.0, RGBColor(1.0,1.0,1.0));
+    // SphereAreaLight sphere1(Vec3(-1, 1, 1), 0.5, &whiteLightSource, 64);
+    // std::cout << "sph1: " << &sphere1 << std::endl;
+    // Sphere sphere2(Vec3(-1.5, -1.5, 0.0), 1.0, &transparentMaterial);
+    // std::cout << "sph2: " << &sphere2 << std::endl;
     
-    std::cout << "Adding geometric objects" << std::endl;
-    // world.AddGeometricObject(&triangle1);
-    world.AddGeometricObject(&triangle2);
-    // world.AddGeometricObject(&triangle1_);
-    world.AddGeometricObject(&triangle2_);
-    world.AddGeometricObject(&sphere1);
-    world.AddGeometricObject(&sphere2);
-    world.AddGeometricObject(&sph3);
+    // std::cout << "Adding geometric objects" << std::endl;
+    // // world.AddGeometricObject(&triangle1);
+    // world.AddGeometricObject(&triangle2);
+    // // world.AddGeometricObject(&triangle1_);
+    // world.AddGeometricObject(&triangle2_);
+    // world.AddGeometricObject(&sphere1);
+    // world.AddGeometricObject(&sphere2);
+    // world.AddGeometricObject(&sph3);
 
-    world.AddGeometricObject(&squareMirrorPart1);
-    world.AddGeometricObject(&squareMirrorPart2);
-    world.AddGeometricObject(&squareMirrorPart1_);
-    world.AddGeometricObject(&squareMirrorPart2_);
+    // world.AddGeometricObject(&squareMirrorPart1);
+    // world.AddGeometricObject(&squareMirrorPart2);
+    // world.AddGeometricObject(&squareMirrorPart1_);
+    // world.AddGeometricObject(&squareMirrorPart2_);
 
-    world.AddGeometricObject(&plane);
-    world.AddGeometricObject(&plane2);
-    world.AddGeometricObject(&plane3);
-    world.AddGeometricObject(&plane4);
-    // world.AddGeometricObject(&plane5);
-    // world.AddGeometricObject(&plane6);
+    // world.AddGeometricObject(&plane);
+    // world.AddGeometricObject(&plane2);
+    // world.AddGeometricObject(&plane3);
+    // world.AddGeometricObject(&plane4);
+    // // world.AddGeometricObject(&plane5);
+    // // world.AddGeometricObject(&plane6);
 
-    world.AddLightSource(&sphere1);
+    // world.AddLightSource(&sphere1);
 
-    // // [TODO] check if orthographic camera is shaded correctly.
-    time_t start;
-    double seconds;
-    Scene res;
+    // // // [TODO] check if orthographic camera is shaded correctly.
+    // time_t start;
+    // double seconds;
+    // Scene res;
 
-    // std::cout << "Rendering orthographic scene" << std::endl;
-    // world.SetCamera(&cameraO);
+    // // std::cout << "Rendering orthographic scene" << std::endl;
+    // // world.SetCamera(&cameraO);
+    // // start = time(0);
+    // // res = world.Render();
+    // // seconds = difftime(time(0), start);
+    // // ToPNG("outs/orthographic.png", res);
+    // // std::cout << "Rendered orthographic in " << seconds << " seconds"<< std::endl;
+
+    // std::cout << "Rendering perspective scene" << std::endl;
+    // world.SetCamera(&cameraP);
     // start = time(0);
     // res = world.Render();
+    // ToPNG("outs/perspective.png", res);
     // seconds = difftime(time(0), start);
-    // ToPNG("outs/orthographic.png", res);
-    // std::cout << "Rendered orthographic in " << seconds << " seconds"<< std::endl;
-
-    std::cout << "Rendering perspective scene" << std::endl;
-    world.SetCamera(&cameraP);
-    start = time(0);
-    res = world.Render();
-    ToPNG("outs/perspective.png", res);
-    seconds = difftime(time(0), start);
-    std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;
+    // std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;
   } else {
     // [TODO] fix later (generating random geometries v.s. fixed materials)
 

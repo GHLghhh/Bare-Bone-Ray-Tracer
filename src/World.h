@@ -29,7 +29,7 @@ public:
   void DiscardGeometricObjects();
   void AddLightSource(Light* objPtr);
 
-  Scene Render();
+  Scene Render(const int recursionDepth = 0);
 private:
   void ConvertFromExistingLayout(
     LayoutType type, std::vector<GeometricObject*> layoutObjs);

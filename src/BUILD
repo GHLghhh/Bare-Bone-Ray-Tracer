@@ -4,19 +4,7 @@ cc_library(
     name = "RayTracer",
     srcs = ["main.cc"],
     deps = [
-        ":Ray",
-        ":World",
-        "//src/thirdParty:png",
-        "//src/thirdParty:rgbapixel",
-        "//src/geometricObjects:Plane",
-        "//src/geometricObjects:Sphere",
-        "//src/geometricObjects:Triangle",
-        "//src/materials:Material",
-        "//src/samplers:MultiJitteredSampler2D",
-        "//src/samplers:Sampler2D",
-        "//src/utils/io:loadMeshes",
-        "//src/utils:RGBColor",
-        "//src/utils:Vec3",
+        "//src/utils:predefinedScenes",
     ],
 )
 

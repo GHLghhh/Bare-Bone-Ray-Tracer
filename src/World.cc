@@ -83,7 +83,7 @@ void World::AddLightSource(Light* objPtr)
   lights_.push_back(objPtr);
 }
 
-Scene World::Render()
+Scene World::Render(const int recursionDepth)
 {
   Scene res;
   if (cameraPtr_ == nullptr || viewPlanePtr_ == nullptr || samplerPtr_ == nullptr) {
@@ -99,7 +99,7 @@ Scene World::Render()
         // Get proper color for each sample for the pixel and take average
         RGBColor resColor(0.0, 0.0, 0.0);
         for (Ray& ray : pixelsInRowColumn) {
-          resColor += TraceRay(ray, 0, 5);
+          resColor += TraceRay(ray, 0, recursionDepth);
         }
         res.back().push_back(resColor / pixelsInRowColumn.size());
     }

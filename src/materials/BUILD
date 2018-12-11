@@ -9,3 +9,12 @@ cc_library(
         "//src/utils:Vec3",
     ]
 )
+
+cc_library(
+    name = "Checker3D",
+    srcs = ["Checker3D.cc"],
+    hdrs = ["Checker3D.h"],
+    deps = [
+        ":Material",
+    ]
+)

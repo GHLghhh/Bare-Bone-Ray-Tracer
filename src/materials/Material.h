@@ -15,6 +15,8 @@ public:
   bool SimpleTransparentMaterial();
   bool SimpleLightSource(RGBColor lightColor);
 
+  // [TODO] change from ShadeRec to Vec3 to avoid cycle in dependency graph
+  virtual RGBColor GetColor(const Vec3& hitPosition) { return color; };
   Material& operator= (const Material& rhs);
 
   // [TODO] This should be property of the hitted material
