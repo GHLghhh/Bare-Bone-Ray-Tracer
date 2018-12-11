@@ -9,7 +9,7 @@ class Material {
 public:
   Material();
   Material(RGBColor materialColor);
-  ~Material() = default;
+  virtual ~Material() = default;
 
   bool SimpleMirror();
   bool SimpleTransparentMaterial();

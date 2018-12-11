@@ -18,3 +18,14 @@ cc_library(
         ":Material",
     ]
 )
+
+cc_library(
+    name = "fBmNoiseTexture",
+    srcs = ["fBmNoiseTexture.cc"],
+    hdrs = ["fBmNoiseTexture.h"],
+    deps = [
+        ":Material",
+        "//src/utils:CubicNoise",
+        "//src/utils:LatticeNoise",
+    ]
+)

@@ -11,6 +11,7 @@
 #include "../geometricObjects/Triangle.h"
 #include "../materials/Material.h"
 #include "../materials/Checker3D.h"
+#include "../materials/fBmNoiseTexture.h"
 #include "../samplers/MultiJitteredSampler2D.h"
 #include "../samplers/Sampler2D.h"
 #include "io/loadMeshes.h"
@@ -159,13 +160,14 @@ void MP4(const std::string& filename)
   whiteLightSource.SimpleLightSource(RGBColor(1.0, 1.0, 1.0));
 
   Checker3D checker = Checker3D(RGBColor(1.0, 1.0, 1.0));
+  fBmNoiseTexture noise = fBmNoiseTexture(RGBColor(0.0, 1.0, 0.0), 0.7);
 
   std::cout << "Creating geometric objects" << std::endl;
   //SphereAreaLight sphere1(Vec3(0, 0, 3.0), 0.5, &whiteLightSource, 64);
   PointLight light(Vec3(0.0, 0.0, 3.0), RGBColor(1.0, 1.0, 1.0));
 
   Sphere sphere2(Vec3(-1.5, -1.5, 0.0), 1.0, &checker);
-  Sphere sphere3(Vec3(1.5, 2.0, -1.0), 1.0, &green);
+  Sphere sphere3(Vec3(1.5, 2.0, -1.0), 1.0, &noise);
 
   Plane plane(Vec3(0.0, -3.0, 0.0), Vec3(0.0, 1.0, 0.0), &white);
   Plane plane3(Vec3(0.0, 0.0, -2.5), Vec3(0.0, 0.0, 1.0), &white);

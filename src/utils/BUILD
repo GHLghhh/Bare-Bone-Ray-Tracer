@@ -6,6 +6,25 @@ cc_library(
 )
 
 cc_library(
+    name = "LatticeNoise",
+    srcs = ["LatticeNoise.cc"],
+    hdrs = ["LatticeNoise.h"],
+    deps = [
+        ":Vec3",
+    ]
+)
+
+cc_library(
+    name = "CubicNoise",
+    srcs = ["CubicNoise.cc"],
+    hdrs = ["CubicNoise.h"],
+    deps = [
+        ":LatticeNoise",
+        ":Vec3",
+    ]
+)
+
+cc_library(
     name = "predefinedScenes",
     srcs = ["predefinedScenes.h"],
     deps = [
@@ -18,6 +37,7 @@ cc_library(
         "//src/geometricObjects:Triangle",
         "//src/materials:Material",
         "//src/materials:Checker3D",
+        "//src/materials:fBmNoiseTexture",
         "//src/samplers:MultiJitteredSampler2D",
         "//src/samplers:Sampler2D",
         "//src/utils/io:loadMeshes",
