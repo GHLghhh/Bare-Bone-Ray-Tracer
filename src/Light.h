@@ -15,6 +15,7 @@ class Light {
 public:
   Light(Vec3 spacialParameter, RGBColor color, bool shadow = true);
   RGBColor Color() const { return color_ ;};
+  void SetColor(RGBColor color) { color_ = color; };
   virtual std::vector<ToLightRecord> ToLightRecords(const Vec3& hitPoint) const = 0;
 protected:
   Vec3 param_;

@@ -14,6 +14,13 @@ public:
   ~Object() = default;
 
   const Vec3& Position() const { return position_; };
+  // [TODO] make sure it also update boundingbox
+  void SetPosition(double x, double y, double z)
+  {
+    position_.x = x;
+    position_.y = y;
+    position_.z = z;
+  }
   
 protected:
   Vec3 position_;

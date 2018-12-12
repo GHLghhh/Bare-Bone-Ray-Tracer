@@ -9,6 +9,8 @@ public:
   Sphere(Vec3 position, double radius, Material* material);
   ~Sphere() = default;
   bool Hit(const Ray& ray, double& t, ShadeRec& s) override;
+  std::vector<HitRangeElement> HitRange(const Ray& ray) override;
+  void SetRadius(double radius) { radius_ = radius; };
 protected:
   double radius_;
   virtual void FillShadeRec(const Ray& ray, const double t, ShadeRec& sr) override;

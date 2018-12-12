@@ -164,20 +164,22 @@ RGBColor World::DirectIllumination(const ShadeRec& sr)
         isBlocked = false;
       }
       if (!isBlocked) {
+        RGBColor tempRes(0.0, 0.0, 0.0);
         if (areaLightCast) {
           // [TODO] Area form of rendering equation
           // [TODO] make diffuse and specular BRDF
-          unweightedResColor += 
+          tempRes += 
             Shader::Diffuse(sr, toLightDirection, *light)
             * Vec3::Dot(areaLightCast->Normal(toLightRecord.first), toLightDirection * -1)
             * Vec3::Dot(toLightDirection, sr.normal)
-            // pow((sr.hitPosition - toLightRecord.first).Length(), 2)
+            / pow((sr.hitPosition - toLightRecord.first).Length() * 10, 2)
             * areaLightCast->InvPDF(toLightRecord.first);
         } else {
           // [TODO] change it into hemisphere form
-          unweightedResColor += Shader::Diffuse(sr, toLightDirection, *light);
-          unweightedResColor += Shader::Specular(sr, toLightDirection, *light);
+          tempRes += Shader::Diffuse(sr, toLightDirection, *light);
+          tempRes += Shader::Specular(sr, toLightDirection, *light);
         }
+        unweightedResColor += tempRes * (srTemp.material->transmissiveCoefficient > 0 ? srTemp.material->transmissiveCoefficient : 1.0);
       }
     }
     res += (unweightedResColor / toLightRecords.size());

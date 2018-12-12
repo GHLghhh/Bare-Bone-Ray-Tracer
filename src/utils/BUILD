@@ -35,6 +35,7 @@ cc_library(
         "//src/geometricObjects:Plane",
         "//src/geometricObjects:Sphere",
         "//src/geometricObjects:Triangle",
+        "//src/geometricObjects:CSGObject",
         "//src/materials:Material",
         "//src/materials:Checker3D",
         "//src/materials:fBmNoiseTexture",
