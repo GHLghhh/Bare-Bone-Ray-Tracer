@@ -36,6 +36,143 @@ void ToPNG(const std::string& filename, const Scene& scene)
   out.writeToFile(filename);
 }
 
+void MP2(const std::string& filename)
+{
+  // [TODO] fix later (generating random geometries v.s. fixed materials)
+
+  std::cout << "Initializing world setting" << std::endl;
+  World world = World();
+
+  Vec3 cp = Vec3(0,0, 2);
+  Vec3 la = Vec3(0,0,-1);
+  Vec3 up = Vec3(0,1,0);
+
+  Vec3 cpMesh = Vec3(0, 2.2, 3);
+  Vec3 laMesh = Vec3(0,-0.1,-1);
+  Vec3 upMesh = Vec3(0,1,0);
+  PerspectiveCamera cameraP(cp, la, up, 2);
+  PerspectiveCamera cameraPMesh(cpMesh, laMesh, upMesh, 2);
+  OrthographicCamera cameraO(cp, la, up);
+
+  ViewPlane viewPlane(0.01,0.01,1080,960);
+
+  PointLight light(Vec3(5, 10, 0), Vec3(0.5, 1.0, 1.0));
+  PointLight light2(Vec3(10, 0, 5), Vec3(1.0, 0.5, 0.5));
+  PointLight light3(Vec3(-1, -3, 3), Vec3(0.5, 1.0, 0.5));
+
+  MultiJitteredSampler2D samplerM = MultiJitteredSampler2D(4, 4);
+
+  std::cout << "Applying world setting" << std::endl;
+  world.SetGeometricLayoutType(LayoutType::GRID);
+  world.SetViewPlane(&viewPlane);
+  world.SetSampler(&samplerM);
+  world.SetCamera(&cameraP);
+  world.AddLightSource(&light);
+  world.AddLightSource(&light2);
+
+  /* Generate spheres with different order of magnitude */
+  std::cout << "Creating geometric objects" << std::endl;
+  std::vector<Sphere> spheres;
+  for (int i = 0; i < 10000; i++) {
+    Vec3 randomPosition = Vec3(((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) + 0.3) * -20);
+    double randomRadius = ((double) rand() / (RAND_MAX) + 0.1);
+    RGBColor randomColor = RGBColor(((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)));
+    spheres.emplace_back(randomPosition, randomRadius, randomColor);
+  }
+
+  /* Results from grid layout */
+  for (int i = 0; i < spheres.size(); i++) {
+    world.AddGeometricObject(&spheres[i]);
+    if (i == 99) {
+      std::cout << "Rendering 100 sphere with grid" << std::endl;
+      time_t start = time(0);
+      Scene res = world.Render();
+      double seconds = difftime(time(0), start);
+      ToPNG("outs/1Hballs_grid.png", res);
+      std::cout << "Finished 1h balls with grid in " << seconds << std::endl;
+    }
+    if (i == 999) {
+      std::cout << "Rendering 1000 sphere with grid" << std::endl;
+      time_t start = time(0);
+      Scene res = world.Render();
+      double seconds = difftime(time(0), start);
+      ToPNG("outs/1kballs_grid.png", res);
+      std::cout << "Finished 1k balls with grid in " << seconds << std::endl;
+    }
+    if (i == 9999) {
+      std::cout << "Rendering 10000 sphere with grid" << std::endl;
+      time_t start = time(0);
+      Scene res = world.Render();
+      double seconds = difftime(time(0), start);
+      ToPNG("outs/1wballs_grid.png", res);
+      std::cout << "Finished 1w balls with grid in " << seconds << std::endl;
+    }
+  }
+
+  /* Results from list layout (no acceleration) */
+  world.DiscardGeometricObjects();
+  world.SetGeometricLayoutType(LayoutType::LIST);
+  for (int i = 0; i < spheres.size(); i++) {
+    world.AddGeometricObject(&spheres[i]);
+    if (i == 99) {
+      std::cout << "Rendering 100 sphere with list" << std::endl;
+      time_t start = time(0);
+      Scene res = world.Render();
+      double seconds = difftime(time(0), start);
+      ToPNG(filename + "1Hballs_list.png", res);
+      std::cout << "Finished 1h balls with list in " << seconds << std::endl;
+    }
+    if (i == 999) {
+      std::cout << "Rendering 1000 sphere with list" << std::endl;
+      time_t start = time(0);
+      Scene res = world.Render();
+      double seconds = difftime(time(0), start);
+      ToPNG(filename + "1kballs_list.png", res);
+      std::cout << "Finished 1k balls with list in " << seconds << std::endl;
+    }
+    if (i == 9999) {
+      std::cout << "Rendering 10000 sphere with list" << std::endl;
+      time_t start = time(0);
+      Scene res = world.Render();
+      double seconds = difftime(time(0), start);
+      ToPNG(filename + "10kballs_list.png", res);
+      std::cout << "Finished 1w balls with list in " << seconds << std::endl;
+    }
+  }
+
+  /* Setup for mesh */
+  std::cout << "Loading geometric objects from obj file" << std::endl;
+  std::vector<Triangle> meshes = LoadFromObjFile("teapot.obj");
+  std::cout << meshes.size() << std::endl;
+  std::cout << "End loading meshes" << std::endl;
+
+  std::cout << "Adding geometric objects" << std::endl;
+  world.DiscardGeometricObjects();
+  for (size_t i = 0; i < meshes.size(); i++) {
+    world.AddGeometricObject(&meshes[i]);
+  }
+  std::cout << "Finished adding meshes" << std::endl;
+
+  world.SetCamera(&cameraPMesh);
+  world.AddLightSource(&light3);
+
+  std::cout << "Rendering teapot with list" << std::endl;
+  time_t start = time(0);
+  Scene res = world.Render();
+  double seconds = difftime(time(0), start);
+  ToPNG(filename + "teapot_list.png", res);
+  std::cout << "Finished bunny with list in " << seconds << std::endl;
+
+  world.SetGeometricLayoutType(LayoutType::GRID);
+
+  std::cout << "Rendering teapot with grid" << std::endl;
+  start = time(0);
+  res = world.Render();
+  seconds = difftime(time(0), start);
+  ToPNG(filename + "teapot_grid.png", res);
+  std::cout << "Finished bunny with grid in " << seconds << std::endl;
+}
+
 void MP3(const std::string& filename)
 {
   /* Initialize world */

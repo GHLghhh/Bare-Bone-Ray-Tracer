@@ -179,7 +179,7 @@ RGBColor World::DirectIllumination(const ShadeRec& sr)
           tempRes += Shader::Diffuse(sr, toLightDirection, *light);
           tempRes += Shader::Specular(sr, toLightDirection, *light);
         }
-        unweightedResColor += tempRes * (srTemp.material->transmissiveCoefficient > 0 ? srTemp.material->transmissiveCoefficient : 1.0);
+        unweightedResColor += tempRes * ((srTemp.material != nullptr && srTemp.material->transmissiveCoefficient > 0) ? srTemp.material->transmissiveCoefficient : 1.0);
       }
     }
     res += (unweightedResColor / toLightRecords.size());
