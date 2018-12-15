@@ -33,7 +33,7 @@ bool Triangle::Hit(const Ray& ray, double& tMin, ShadeRec& sr)
   return false;
 }
 
-bool Triangle::IsInTriangle(Vec3 point)
+bool Triangle::IsInTriangle(Vec3 point) const
 {
   Vec3 cross1 = Vec3::Cross((point0_ - point), (point1_ - point));
   Vec3 cross2 = Vec3::Cross((point1_ - point), (point2_ - point));

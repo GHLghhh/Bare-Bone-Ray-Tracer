@@ -71,13 +71,14 @@ void MP2(const std::string& filename)
   world.AddLightSource(&light2);
 
   /* Generate spheres with different order of magnitude */
+  Material white = Material(RGBColor(1.0, 1.0, 1.0));
   std::cout << "Creating geometric objects" << std::endl;
   std::vector<Sphere> spheres;
   for (int i = 0; i < 10000; i++) {
     Vec3 randomPosition = Vec3(((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) - 0.5) * 40, ((double) rand() / (RAND_MAX) + 0.3) * -20);
     double randomRadius = ((double) rand() / (RAND_MAX) + 0.1);
-    RGBColor randomColor = RGBColor(((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)));
-    spheres.emplace_back(randomPosition, randomRadius, randomColor);
+    // RGBColor randomColor = RGBColor(((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)));
+    spheres.emplace_back(randomPosition, randomRadius, &white);
   }
 
   /* Results from grid layout */
@@ -335,6 +336,283 @@ void MP4(const std::string& filename)
   world.SetCamera(&cameraP);
   start = time(0);
   res = world.Render();
+  ToPNG(filename, res);
+  seconds = difftime(time(0), start);
+  std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;
+}
+
+void MP5(const std::string& filename)
+{
+  /* Initialize world */
+  std::cout << "Initializing world setting" << std::endl;
+  World world = World();
+
+  Vec3 cp(278, 273, -800);
+  Vec3 la(0,0,1);
+  Vec3 up(0,1,0);
+
+  PerspectiveCamera cameraP(cp, la, up, 800);
+
+  Sampler2D sampler = Sampler2D();
+  ViewPlane viewPlane(5,5,100,100);
+
+  std::cout << "Applying world setting" << std::endl;
+  world.SetGeometricLayoutType(LayoutType::GRID);
+  world.SetViewPlane(&viewPlane);
+  world.SetSampler(&sampler);
+
+  /* Initializing materials */
+  Material green = Material(RGBColor(0.0,1.0,0.0));
+  Material red = Material(RGBColor(1.0,0.0,0.0));
+  Material white = Material(RGBColor(1.0, 1.0, 1.0));
+
+  Material whiteLightSource = Material();
+  whiteLightSource.SimpleLightSource(RGBColor(1.0, 1.0, 1.0));
+
+  std::cout << "Creating geometric objects" << std::endl;
+
+  // [TODO] remove the temp light and geometries after area light is implemented
+  // cos term that effective?
+  PointLight light(Vec3(226.0, 400.0, 180.0), RGBColor(1.0, 1.0, 1.0));
+  Plane back(Vec3(278.0, 273.0, 0), Vec3(0.0, 0.0, -1.0), &white);
+
+  // Light (slightly lower than ceiling in y direction)
+  // 343.0 548.8 227.0 
+  // 343.0 548.8 332.0
+  // 213.0 548.8 332.0
+  // 213.0 548.8 227.0
+  // [TODO] Create square geometric object to simplify sampling
+  //        or figure out a way to sample triangle uniformly
+  TriangleAreaLight light1(
+    Vec3(343.0, 548.7, 227.0), Vec3(343.0, 548.7, 332.0),
+    Vec3(213.0, 548.7, 332.0), &whiteLightSource, 4);
+  TriangleAreaLight light2(
+    Vec3(213.0, 548.7, 332.0), Vec3(213.0, 548.7, 227.0),
+    Vec3(343.0, 548.7, 227.0), &whiteLightSource, 4);
+
+  // Floor
+  // 552.8 0.0   0.0   
+  // 0.0 0.0   0.0
+  // 0.0 0.0 559.2
+  // 549.6 0.0 559.2
+  Triangle floor1(
+    Vec3(552.8, 0.0, 0.0), Vec3(0.0, 0.0, 0.0),
+    Vec3(0.0, 0.0, 559.2), &white);
+  Triangle floor2(
+    Vec3(0.0, 0.0, 559.2), Vec3(549.6, 0.0, 559.2),
+    Vec3(552.8, 0.0, 0.0), &white);
+
+  // Ceiling
+  // 556.0 548.8 0.0   
+  // 556.0 548.8 559.2
+  // 0.0 548.8 559.2
+  // 0.0 548.8   0.0
+  Triangle ceil1(
+    Vec3(556.0, 548.8, 0.0), Vec3(556.0, 548.8, 559.2),
+    Vec3(0.0, 548.8, 559.2), &white);
+  Triangle ceil2(
+    Vec3(0.0, 548.8, 559.2), Vec3(0.0, 548.8, 0.0),
+    Vec3(556.0, 548.8, 0.0), &white);
+
+  // Back wall
+  // 549.6   0.0 559.2 
+  // 0.0   0.0 559.2
+  // 0.0 548.8 559.2
+  // 556.0 548.8 559.2
+  Triangle back1(
+    Vec3(549.6, 0.0, 559.2), Vec3(0.0, 0.0, 559.2),
+    Vec3(0.0, 548.8, 559.2), &white);
+  Triangle back2(
+    Vec3(0.0, 548.8, 559.2), Vec3(556.0, 548.8, 559.2),
+    Vec3(549.6, 0.0, 559.2), &white);
+
+  // Right wall
+  // 0.0   0.0 559.2   
+  // 0.0   0.0   0.0
+  // 0.0 548.8   0.0
+  // 0.0 548.8 559.2
+  Triangle right1(
+    Vec3(0.0, 0.0, 559.2), Vec3(0.0, 0.0, 0.0),
+    Vec3(0.0, 548.8, 0.0), &green);
+  Triangle right2(
+    Vec3(0.0, 548.8, 0.0), Vec3(0.0, 548.8, 559.2),
+    Vec3(0.0, 0.0, 559.2), &green);
+
+  // Left wall
+  // 552.8   0.0   0.0 
+  // 549.6   0.0 559.2
+  // 556.0 548.8 559.2
+  // 556.0 548.8   0.0
+  Triangle left1(
+    Vec3(552.8, 0.0, 0.0), Vec3(549.6, 0.0, 559.2),
+    Vec3(556.0, 548.8, 559.2), &red);
+  Triangle left2(
+    Vec3(556.0, 548.8, 559.2), Vec3(556.0, 548.8, 0.0),
+    Vec3(552.8, 0.0, 0.0), &red);
+
+  // Short block
+  // 130.0 165.0  65.0 
+  // 82.0 165.0 225.0
+  // 240.0 165.0 272.0
+  // 290.0 165.0 114.0
+  Triangle sba1(
+    Vec3(130.0, 165.0, 65.0), Vec3(82.0, 165.0, 225.0),
+    Vec3(240.0, 165.0, 272.0), &white);
+  Triangle sba2(
+    Vec3(240.0, 165.0, 272.0), Vec3(290.0, 165.0, 114.0),
+    Vec3(130.0, 165.0, 65.0), &white);
+
+  // 290.0   0.0 114.0
+  // 290.0 165.0 114.0
+  // 240.0 165.0 272.0
+  // 240.0   0.0 272.0
+  Triangle sbb1(
+    Vec3(290.0, 0.0, 114.0), Vec3(290.0, 165.0, 114.0),
+    Vec3(240.0, 165.0, 272.0), &white);
+  Triangle sbb2(
+    Vec3(240.0, 165.0, 272.0), Vec3(240.0, 0.0, 272.0),
+    Vec3(290.0, 0.0, 114.0), &white);
+
+  // 130.0   0.0  65.0
+  // 130.0 165.0  65.0
+  // 290.0 165.0 114.0
+  // 290.0   0.0 114.0
+  Triangle sbc1(
+    Vec3(130.0, 0.0, 65.0), Vec3(130.0, 165.0, 65.0),
+    Vec3(290.0, 165.0, 114.0), &white);
+  Triangle sbc2(
+    Vec3(290.0, 165.0, 114.0), Vec3(290.0, 0.0, 114.0),
+    Vec3(130.0, 0.0, 65.0), &white);
+
+  // 82.0   0.0 225.0
+  // 82.0 165.0 225.0
+  // 130.0 165.0  65.0
+  // 130.0   0.0  65.0
+  Triangle sbd1(
+    Vec3(82.0, 0.0, 225.0), Vec3(82.0, 165.0, 225.0),
+    Vec3(130.0, 165.0, 65.0), &white);
+  Triangle sbd2(
+    Vec3(130.0, 165.0, 65.0), Vec3(130.0, 0.0, 65.0),
+    Vec3(82.0, 0.0, 225.0), &white);
+
+  // 240.0   0.0 272.0
+  // 240.0 165.0 272.0
+  // 82.0 165.0 225.0
+  // 82.0   0.0 225.0
+  Triangle sbe1(
+    Vec3(240.0, 0.0, 272.0), Vec3(240.0, 165.0, 272.0),
+    Vec3(82.0, 165.0, 225.0), &white);
+  Triangle sbe2(
+    Vec3(82.0, 165.0, 225.0), Vec3(82.0, 0.0, 225.0),
+    Vec3(240.0, 0.0, 272.0), &white);
+
+  // 423.0 330.0 247.0
+  // 265.0 330.0 296.0
+  // 314.0 330.0 456.0
+  // 472.0 330.0 406.0
+  Triangle tba1(
+    Vec3(423.0, 330.0, 247.0), Vec3(265.0, 330.0, 296.0),
+    Vec3(314.0, 330.0, 456.0), &white);
+  Triangle tba2(
+    Vec3(314.0, 330.0, 456.0), Vec3(472.0, 330.0, 406.0),
+    Vec3(423.0, 330.0, 247.0), &white);
+
+  // 423.0   0.0 247.0
+  // 423.0 330.0 247.0
+  // 472.0 330.0 406.0
+  // 472.0   0.0 406.0
+  Triangle tbb1(
+    Vec3(423.0, 0.0, 247.0), Vec3(423.0, 330.0, 247.0),
+    Vec3(472.0, 330.0, 406.0), &white);
+  Triangle tbb2(
+    Vec3(472.0, 330.0, 406.0), Vec3(472.0, 0.0, 406.0),
+    Vec3(423.0, 0.0, 247.0), &white);
+
+  // 472.0   0.0 406.0
+  // 472.0 330.0 406.0
+  // 314.0 330.0 456.0
+  // 314.0   0.0 456.0
+  Triangle tbc1(
+    Vec3(472.0, 0.0, 406.0), Vec3(472.0, 330.0, 406.0),
+    Vec3(314.0, 330.0, 456.0), &white);
+  Triangle tbc2(
+    Vec3(314.0, 330.0, 456.0), Vec3(314.0, 0.0, 456.0),
+    Vec3(472.0, 0.0, 406.0), &white);
+
+  // 314.0   0.0 456.0
+  // 314.0 330.0 456.0
+  // 265.0 330.0 296.0
+  // 265.0   0.0 296.0
+  Triangle tbd1(
+    Vec3(314.0, 0.0, 456.0), Vec3(314.0, 330.0, 456.0),
+    Vec3(265.0, 330.0, 296.0), &white);
+  Triangle tbd2(
+    Vec3(265.0, 330.0, 296.0), Vec3(265.0, 0.0, 296.0),
+    Vec3(314.0, 0.0, 456.0), &white);
+
+  // 265.0   0.0 296.0
+  // 265.0 330.0 296.0
+  // 423.0 330.0 247.0
+  // 423.0   0.0 247.0
+  Triangle tbe1(
+    Vec3(265.0, 0.0, 296.0), Vec3(265.0, 330.0, 296.0),
+    Vec3(423.0, 330.0, 247.0), &white);
+  Triangle tbe2(
+    Vec3(423.0, 330.0, 247.0), Vec3(423.0, 0.0, 247.0),
+    Vec3(265.0, 0.0, 296.0), &white);
+
+  std::cout << "Adding geometric objects" << std::endl;
+  world.AddGeometricObject(&light1);
+  world.AddGeometricObject(&light2);
+
+  world.AddGeometricObject(&floor1);
+  world.AddGeometricObject(&floor2);
+  world.AddGeometricObject(&ceil1);
+  world.AddGeometricObject(&ceil2);
+  world.AddGeometricObject(&back1);
+  world.AddGeometricObject(&back2);
+
+  world.AddGeometricObject(&right1);
+  world.AddGeometricObject(&right2);
+  world.AddGeometricObject(&left1);
+  world.AddGeometricObject(&left2);
+
+  world.AddGeometricObject(&sba1);
+  world.AddGeometricObject(&sba2);
+  world.AddGeometricObject(&sbb1);
+  world.AddGeometricObject(&sbb2);
+  world.AddGeometricObject(&sbc1);
+  world.AddGeometricObject(&sbc2);
+  world.AddGeometricObject(&sbd1);
+  world.AddGeometricObject(&sbd2);
+  world.AddGeometricObject(&sbe1);
+  world.AddGeometricObject(&sbe2);
+
+  world.AddGeometricObject(&tba1);
+  world.AddGeometricObject(&tba2);
+  world.AddGeometricObject(&tbb1);
+  world.AddGeometricObject(&tbb2);
+  world.AddGeometricObject(&tbc1);
+  world.AddGeometricObject(&tbc2);
+  world.AddGeometricObject(&tbd1);
+  world.AddGeometricObject(&tbd2);
+  world.AddGeometricObject(&tbe1);
+  world.AddGeometricObject(&tbe2);
+
+  // world.AddGeometricObject(&back);
+
+  // world.AddLightSource(&light);
+  world.AddLightSource(&light1);
+  world.AddLightSource(&light2);
+
+  time_t start;
+  double seconds;
+  Scene res;
+
+  std::cout << "Rendering perspective scene" << std::endl;
+  world.SetCamera(&cameraP);
+  start = time(0);
+  res = world.Render(0);
   ToPNG(filename, res);
   seconds = difftime(time(0), start);
   std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;

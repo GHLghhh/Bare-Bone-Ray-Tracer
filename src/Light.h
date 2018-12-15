@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "geometricObjects/Sphere.h"
+#include "geometricObjects/Triangle.h"
 #include "samplers/HemisphereSampler3D.h"
 #include "utils/RGBColor.h"
 #include "utils/Vec3.h"
@@ -43,7 +44,7 @@ public:
     int numSamples, bool shadow = true);
   virtual std::vector<ToLightRecord> ToLightRecords(const Vec3& hitPoint) const = 0;
   virtual Vec3 Normal(const Vec3& lightPosition) = 0;
-  virtual double InvPDF(const Vec3& lightPosition) = 0;
+  virtual double InvPDF(const Vec3& lightPosition);
 
 protected:
   int numSamples_;
@@ -63,4 +64,15 @@ protected:
 private:
   HemisphereSampler3D sampler_;
   double hemisphereArea_;
+};
+
+class TriangleAreaLight : public AreaLight, public Triangle {
+public:
+  TriangleAreaLight(
+    Vec3 lightVertex0, Vec3 lightVertex1, Vec3 lightVertex2,
+    Material* material, int numSamples, bool shadow = true);
+  std::vector<ToLightRecord> ToLightRecords(const Vec3& hitPoint) const override;
+  Vec3 Normal(const Vec3& lightPosition) override;
+protected:
+  void FillShadeRec(const Ray& ray, const double t, ShadeRec& sr) override;
 };

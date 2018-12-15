@@ -171,9 +171,10 @@ RGBColor World::DirectIllumination(const ShadeRec& sr)
           tempRes += 
             Shader::Diffuse(sr, toLightDirection, *light)
             * Vec3::Dot(areaLightCast->Normal(toLightRecord.first), toLightDirection * -1)
-            * Vec3::Dot(toLightDirection, sr.normal)
-            / pow((sr.hitPosition - toLightRecord.first).Length() * 10, 2)
-            * areaLightCast->InvPDF(toLightRecord.first);
+            * Vec3::Dot(toLightDirection, sr.normal);
+            // [TODO] figure out how to model it correctly.
+            // / pow((sr.hitPosition - toLightRecord.first).Length() / 100, 2)
+            // * areaLightCast->InvPDF(toLightRecord.first);
         } else {
           // [TODO] change it into hemisphere form
           tempRes += Shader::Diffuse(sr, toLightDirection, *light);
