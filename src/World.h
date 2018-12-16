@@ -8,6 +8,7 @@
 #include "Light.h"
 #include "geometricObjects/GeometricObject.h"
 #include "samplers/Sampler2D.h"
+#include "samplers/HemisphereSampler3D.h"
 #include "utils/ShadeRec.h"
 
 using Scene = std::vector<std::vector<RGBColor>>;
@@ -43,6 +44,7 @@ private:
   Camera* cameraPtr_;
   ViewPlane* viewPlanePtr_;
   Sampler2D* samplerPtr_;
+  HemisphereSampler3D diffuseDirectionSampler_;
   std::vector<Light*> lights_;
   LayoutType type_;
   std::unique_ptr<GeometricLayout> geometricLayoutPtr_;

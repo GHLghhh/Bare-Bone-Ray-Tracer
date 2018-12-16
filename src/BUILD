@@ -83,6 +83,7 @@ cc_library(
         ":Light",
         "//src/geometricObjects:GeometricObject",
         "//src/samplers:Sampler2D",
+        "//src/samplers:HemisphereSampler3D",
         "//src/shaders:Shader",
         "//src/utils:constants",
         "//src/utils:ShadeRec"

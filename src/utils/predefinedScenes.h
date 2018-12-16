@@ -353,7 +353,7 @@ void MP5(const std::string& filename)
 
   PerspectiveCamera cameraP(cp, la, up, 800);
 
-  Sampler2D sampler = Sampler2D();
+  MultiJitteredSampler2D sampler = MultiJitteredSampler2D(10, 10);
   ViewPlane viewPlane(5,5,100,100);
 
   std::cout << "Applying world setting" << std::endl;
@@ -612,7 +612,7 @@ void MP5(const std::string& filename)
   std::cout << "Rendering perspective scene" << std::endl;
   world.SetCamera(&cameraP);
   start = time(0);
-  res = world.Render(0);
+  res = world.Render(10);
   ToPNG(filename, res);
   seconds = difftime(time(0), start);
   std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;

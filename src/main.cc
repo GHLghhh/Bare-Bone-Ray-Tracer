@@ -4,7 +4,7 @@
 int main() {
   // MP3("outs/mp3.png");
   // MP4("outs/mp4.png");
-  MP5("outs/cornell_box.png");
+  MP5("outs/cornell_box_1.png");
 
   // VideoSceneA("outs/video_a_");
   // VideoSceneB("outs/video_b_");

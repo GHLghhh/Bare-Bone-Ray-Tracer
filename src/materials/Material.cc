@@ -9,7 +9,7 @@ Material::Material()
 
 Material::Material(RGBColor materialColor)
   : color(materialColor), emittedColor(0.0, 0.0, 0.0),
-    diffuseCoefficient(0.9), specularCoefficient(0.0), transmissiveCoefficient(0.0),
+    diffuseCoefficient(0.8), specularCoefficient(0.0), transmissiveCoefficient(0.0),
     indexOfRefraction(1.0), shininess(10)
 {
 }

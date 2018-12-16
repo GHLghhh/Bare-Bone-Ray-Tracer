@@ -9,7 +9,7 @@ static double WORLD_INDEX_OF_REFREACTION = 1.0;
 
 World::World()
   : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr),
-    type_(LayoutType::LIST)
+    diffuseDirectionSampler_(HemisphereSampler3D(1)), type_(LayoutType::LIST)
 {
   geometricLayoutPtr_ = std::unique_ptr<GeometricLayout>(new GeometricLayout());
 }
@@ -17,7 +17,8 @@ World::World()
 World::World(const World& rhs)
   : backGroundColor(rhs.backGroundColor),
     cameraPtr_(rhs.cameraPtr_), viewPlanePtr_(rhs.viewPlanePtr_),
-    samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_), type_(rhs.type_)
+    samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_),
+    diffuseDirectionSampler_(HemisphereSampler3D(1)), type_(rhs.type_)
 {
   ConvertFromExistingLayout(type_, (rhs.geometricLayoutPtr_->GetObjects()));
 }
@@ -121,10 +122,12 @@ RGBColor World::TraceRay(const Ray& ray, const int currentDepth, const int recur
     res += backGroundColor;
   } else {
     // emittedColor is 0 if it is not hitting light source
-    res += sr.material->emittedColor;
+    if (currentDepth >= 0)
+      res += sr.material->emittedColor;
     // [TODO] ambient component and wrap everything into a shading model?
     // Direct illumination
-    res += DirectIllumination(sr);
+    if (currentDepth < 0)
+      res += DirectIllumination(sr);
     // [TODO] right now, indirect illumination will only happen on Mirror
     // (specular 1.0, diffuse 0.0)
     res += IndirectIllumination(sr, currentDepth, recursionDepth);
@@ -196,18 +199,44 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
   }
 
   RGBColor res(0.0, 0.0, 0.0);
+  RGBColor incomingColor;
+  if (sr.material->diffuseCoefficient > 0) {
+    // Diffuse
+    // [TODO] extract part of it out once BRDF is implemented as separate components
+    // Create u, v, w unit vector for mapping hemisphere samples on world coordinate
+    Vec3 w = sr.normal;
+    // Variable used for generating orthogonal coordinate
+    Vec3 driftW = Vec3(
+      Vec3::Dot(Vec3(cos(M_PI_4), -sin(M_PI_4), 0.0), w),
+      Vec3::Dot(Vec3(sin(M_PI_4), cos(M_PI_4), 0.0), w),
+      Vec3::Dot(Vec3(0.0, 0.0, 1.0), w));
+
+    Vec3 u = Vec3::Cross(w, driftW).Unit();
+    Vec3 v = Vec3::Cross(w, u).Unit();
+
+    Vec3 localDiffusedDirection = diffuseDirectionSampler_.GenerateSamplePoints()[0];
+    Vec3 diffusedDirection = (u * localDiffusedDirection.x + v * localDiffusedDirection.y + w * localDiffusedDirection.z).Unit();
+
+    incomingColor = TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+    // [TODO] Directly using pdf for diffuse surface and simplify the equation with it.
+    // Need to make it into getting actual pdf to generalize on other types of surfaces
+    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI;
+  }
+
   // [TODO] Right now is only perfect mirror reflection
   // Reflection
   // Get reflected ray and trace
   Vec3 toEyeDirection = (sr.eyePosition - sr.hitPosition).Unit();
-  Vec3 reflectedDirection = sr.normal * Vec3::Dot(sr.normal * inverseNormal, toEyeDirection) * 2 * inverseNormal - toEyeDirection;
-  RGBColor incomingColor;
-  if (inverseNormal == 1) {
-    incomingColor = TraceRay(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth);
-  } else {
-    incomingColor = TraceRayInObject(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth);
+  if (sr.material->specularCoefficient > 0) {
+    Vec3 reflectedDirection = sr.normal * Vec3::Dot(sr.normal * inverseNormal, toEyeDirection) * 2 * inverseNormal - toEyeDirection;
+    
+    if (inverseNormal == 1) {
+      incomingColor = TraceRay(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth);
+    } else {
+      incomingColor = TraceRayInObject(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth);
+    }
+    res += incomingColor * sr.material->specularCoefficient * sr.material->color;
   }
-  res += incomingColor * sr.material->specularCoefficient * sr.material->color;
 
   // Refraction
   // [TODO] reuse TraceRay
