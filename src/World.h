@@ -35,6 +35,7 @@ private:
   void ConvertFromExistingLayout(
     LayoutType type, std::vector<GeometricObject*> layoutObjs);
 
+  RGBColor PartialRender(std::vector<Vec3>* localDirection_ptr, Vec3 u, Vec3 v, Vec3 w, Vec3 hitPosition, int currentDepth, int recursionDepth, int start, int end);
   RGBColor TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
   RGBColor TraceRayInObject(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
   RGBColor DirectIllumination(const ShadeRec& sr);

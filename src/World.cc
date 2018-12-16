@@ -1,5 +1,7 @@
 #include <cmath>
 #include <iostream>
+#include <thread>
+#include <future>
 
 #include "World.h"
 #include "shaders/Shader.h"
@@ -199,6 +201,16 @@ RGBColor World::DirectIllumination(const ShadeRec& sr)
   return res;
 }
 
+RGBColor World::PartialRender(std::vector<Vec3>* localDirection_ptr, Vec3 u, Vec3 v, Vec3 w, Vec3 hitPosition, int currentDepth, int recursionDepth, int start, int end)
+{
+  RGBColor res = RGBColor(0.0, 0.0, 0.0);
+  for (int i = start; i < end; i++) {
+    Vec3 diffusedDirection = (u * (*localDirection_ptr)[i].x + v * (*localDirection_ptr)[i].y + w * (*localDirection_ptr)[i].z).Unit();
+    res += TraceRay(Ray(hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+  }
+  return res / (end - start);
+}
+
 RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth, const int recursionDepth, int inverseNormal)
 {
   // End indirect illumination
@@ -228,13 +240,24 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
     } else {
       localDiffusedDirection = oneDiffuseDirectionSampler_.GenerateSamplePoints();
     }
-    for (auto& direction : localDiffusedDirection) {
-      Vec3 diffusedDirection = (u * direction.x + v * direction.y + w * direction.z).Unit();
+    if (localDiffusedDirection.size() > 1) {
+      int deciSize = localDiffusedDirection.size() / 40;
+      std::vector<std::future<RGBColor>> incomingColors;
+      for (int i = 0; i < localDiffusedDirection.size(); i+=deciSize) {
+        int end = (i+deciSize > localDiffusedDirection.size()) ? localDiffusedDirection.size() : (i+deciSize);
+        incomingColors.push_back(std::async(&World::PartialRender, this, &localDiffusedDirection, u, v, w, sr.hitPosition, currentDepth, recursionDepth, i, end));
+      }
+      for (auto& color : incomingColors) {
+        incomingColor += color.get();
+      }
+      incomingColor /= incomingColors.size();
+    } else {
+      Vec3 diffusedDirection = (u * localDiffusedDirection[0].x + v * localDiffusedDirection[0].y + w * localDiffusedDirection[0].z).Unit();
       incomingColor += TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
     }
     // [TODO] Directly using pdf for diffuse surface and simplify the equation with it.
     // Need to make it into getting actual pdf to generalize on other types of surfaces
-    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI_2 / localDiffusedDirection.size();
+    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI_2;
   }
 
   // [TODO] Right now is only perfect mirror reflection

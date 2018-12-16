@@ -367,7 +367,7 @@ void MP5(const std::string& filename)
   Material white = Material(RGBColor(1.0, 1.0, 1.0));
 
   Material whiteLightSource = Material();
-  whiteLightSource.SimpleLightSource(RGBColor(1.0, 1.0, 1.0));
+  whiteLightSource.SimpleLightSource(RGBColor(1.0, 0.73, 0.4));
 
   std::cout << "Creating geometric objects" << std::endl;
 
