@@ -353,7 +353,7 @@ void MP5(const std::string& filename)
 
   PerspectiveCamera cameraP(cp, la, up, 800);
 
-  MultiJitteredSampler2D sampler = MultiJitteredSampler2D(10, 10);
+  Sampler2D sampler = Sampler2D();
   ViewPlane viewPlane(5,5,100,100);
 
   std::cout << "Applying world setting" << std::endl;

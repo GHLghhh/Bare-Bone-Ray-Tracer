@@ -121,16 +121,21 @@ RGBColor World::TraceRay(const Ray& ray, const int currentDepth, const int recur
   if (!isHit) {
     res += backGroundColor;
   } else {
+    RGBColor tempRes = RGBColor(0.0, 0.0, 0.0);
     // emittedColor is 0 if it is not hitting light source
     if (currentDepth >= 0)
-      res += sr.material->emittedColor;
+      tempRes += sr.material->emittedColor;
     // [TODO] ambient component and wrap everything into a shading model?
     // Direct illumination
     if (currentDepth < 0)
-      res += DirectIllumination(sr);
+      tempRes += DirectIllumination(sr);
     // [TODO] right now, indirect illumination will only happen on Mirror
     // (specular 1.0, diffuse 0.0)
-    res += IndirectIllumination(sr, currentDepth, recursionDepth);
+    int numSample = (currentDepth == 0) ? 1000 : 1;
+    
+    for (int i = 0; i < numSample; i++)
+      tempRes += IndirectIllumination(sr, currentDepth, recursionDepth);
+    res += tempRes / numSample;
   }
   return res;
 }
