@@ -613,7 +613,29 @@ void MP5(const std::string& filename)
   world.SetCamera(&cameraP);
   start = time(0);
   res = world.Render(10);
-  ToPNG(filename, res);
+  ToPNG(filename + ".png", res);
+  // Highlight cache point
+  // Note that this is using scene knowledge, not general knowledge
+  std::vector<Vec3*> cachePoints = world.GetCachePoints();
+  double viewPlaneWidth = viewPlane.PixelWidth() * viewPlane.HorizontalResolution();
+  double viewPlaneHeight = viewPlane.PixelHeight() * viewPlane.VerticalResolution();
+  double planeux = cp.x - viewPlaneWidth / 2;
+  double planelx = cp.x + viewPlaneWidth / 2;
+  double planely = cp.y - viewPlaneHeight / 2;
+  double planeuy = cp.y + viewPlaneHeight / 2;
+  
+  std::cout << "size " << cachePoints.size() << std::endl;
+  for (auto& point_ptr : cachePoints) {
+    Vec3 rayDirection = (*point_ptr) - cp;
+    // know z location of the viewplane.
+    double t = 800.0 / rayDirection.z;
+    double x = cp.x + t * rayDirection.x;
+    double y = cp.y + t * rayDirection.y;
+    int xIdx = fabs(((x - planelx) / viewPlaneWidth) * viewPlane.HorizontalResolution());
+    int yIdx = fabs(((y - planely) / viewPlaneHeight) * viewPlane.VerticalResolution());
+    res[xIdx][yIdx] = RGBColor(0.0, 0.0, 1.0);
+  }
+  ToPNG(filename + "_highlight.png", res);
   seconds = difftime(time(0), start);
   std::cout << "Rendered perspective in " << seconds << " seconds" << std::endl;
 }

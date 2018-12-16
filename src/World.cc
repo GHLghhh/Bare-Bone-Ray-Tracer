@@ -10,7 +10,8 @@ static double WORLD_INDEX_OF_REFREACTION = 1.0;
 World::World()
   : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr),
     diffuseDirectionSampler_(HemisphereSampler3D(100)),
-    oneDiffuseDirectionSampler_(HemisphereSampler3D(1)), type_(LayoutType::LIST)
+    oneDiffuseDirectionSampler_(HemisphereSampler3D(1)),
+    irradianceCache_(IrradianceCache()), type_(LayoutType::LIST)
 {
   geometricLayoutPtr_ = std::unique_ptr<GeometricLayout>(new GeometricLayout());
 }
@@ -20,7 +21,8 @@ World::World(const World& rhs)
     cameraPtr_(rhs.cameraPtr_), viewPlanePtr_(rhs.viewPlanePtr_),
     samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_),
     diffuseDirectionSampler_(HemisphereSampler3D(100)),
-    oneDiffuseDirectionSampler_(HemisphereSampler3D(1)), type_(rhs.type_)
+    oneDiffuseDirectionSampler_(HemisphereSampler3D(1)),
+    irradianceCache_(IrradianceCache()), type_(rhs.type_)
 {
   ConvertFromExistingLayout(type_, (rhs.geometricLayoutPtr_->GetObjects()));
 }
@@ -96,13 +98,31 @@ Scene World::Render(const int recursionDepth)
   }
   PixelRays pixelRays = cameraPtr_->CastRays(*samplerPtr_, *viewPlanePtr_);
   size_t totalPixel = pixelRays.size();
+  std::cout << "First pass" << std::endl;
+  int counter = 0;
+  for (auto& pixelsInRow : pixelRays) {
+    // res.push_back(std::vector<RGBColor>());
+    for (auto& pixelsInRowColumn : pixelsInRow) {
+        // Get proper color for each sample for the pixel and take average
+        RGBColor resColor(0.0, 0.0, 0.0);
+        for (Ray& ray : pixelsInRowColumn) {
+          resColor += TraceRay(ray, 0, recursionDepth).first;
+        }
+        // res.back().push_back(resColor / pixelsInRowColumn.size());
+    }
+    counter++;
+    if (counter % (std::max((int)(totalPixel / 10),1)) == 0) {
+      std::cout << "Rendering current scene: " << counter << "/" << totalPixel << std::endl;
+    }
+  }
+  std::cout << "Second pass" << std::endl;
   for (auto& pixelsInRow : pixelRays) {
     res.push_back(std::vector<RGBColor>());
     for (auto& pixelsInRowColumn : pixelsInRow) {
         // Get proper color for each sample for the pixel and take average
         RGBColor resColor(0.0, 0.0, 0.0);
         for (Ray& ray : pixelsInRowColumn) {
-          resColor += TraceRay(ray, 0, recursionDepth);
+          resColor += TraceRay(ray, 0, recursionDepth).first;
         }
         res.back().push_back(resColor / pixelsInRowColumn.size());
     }
@@ -113,7 +133,7 @@ Scene World::Render(const int recursionDepth)
   return res;
 }
 
-RGBColor World::TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth)
+std::pair<RGBColor, double> World::TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth)
 {
   RGBColor res(0.0, 0.0, 0.0);
   double t = -1;
@@ -140,7 +160,7 @@ RGBColor World::TraceRay(const Ray& ray, const int currentDepth, const int recur
     // res += tempRes / numSample;
     res += IndirectIllumination(sr, currentDepth, recursionDepth);
   }
-  return res;
+  return std::make_pair(res, t);
 }
 
 RGBColor World::DirectIllumination(const ShadeRec& sr)
@@ -224,17 +244,59 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
 
     std::vector<Vec3> localDiffusedDirection;
     if (currentDepth == 0) {
-      localDiffusedDirection = diffuseDirectionSampler_.GenerateSamplePoints();
+      // Only do irradiance caching for primary ray
+      IrradianceCache::ResultIrradianceQueue iqueue;
+      const double threashold = 5.0; // 大きいほど精度向上
+      const double radius = 100.0;
+      IrradianceCache::IrradianceQuery query(sr.hitPosition, sr.normal, radius, threashold);
+      irradianceCache_.SearchCachedPoints(iqueue, query);
+      if (iqueue.size() == 0)
+        localDiffusedDirection = diffuseDirectionSampler_.GenerateSamplePoints();
+      else {
+        // get incoming color from cache
+        std::vector<IrradianceCache::ElementForIrradianceQueue> irrs;
+        irrs.reserve(iqueue.size());
+        double weight = 0;
+        for (;!iqueue.empty();) {
+          IrradianceCache::ElementForIrradianceQueue i = iqueue.top();
+          iqueue.pop();
+          irrs.push_back(i);
+          // [TODO] special case for exact same point
+          if (i.weight == -1) {
+            incomingColor = i.point->irradiance;
+            weight = 1;
+            break;
+          }
+          weight += i.weight;
+          incomingColor += i.point->irradiance * i.weight;
+        }
+
+        incomingColor = incomingColor / weight;
+      }
     } else {
       localDiffusedDirection = oneDiffuseDirectionSampler_.GenerateSamplePoints();
     }
+    double invDistanceSum = 0;
+    // double for calculation
+    double numHit = 0;
     for (auto& direction : localDiffusedDirection) {
       Vec3 diffusedDirection = (u * direction.x + v * direction.y + w * direction.z).Unit();
-      incomingColor += TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+      auto traceRes = TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+      incomingColor += traceRes.first;
+      // If here, cache miss, prepare for adding irradiance
+      if (traceRes.second > 0) {
+        invDistanceSum += 1.0 / traceRes.second;
+        numHit += 1.0;
+      }
+    }
+    if (localDiffusedDirection.size() > 1) {
+      // If here, cache miss, add sampling result to cache
+      incomingColor = incomingColor / localDiffusedDirection.size();
+      irradianceCache_.AddPointToTree(Irradiance(sr.hitPosition, incomingColor, sr.normal, numHit / invDistanceSum));
     }
     // [TODO] Directly using pdf for diffuse surface and simplify the equation with it.
     // Need to make it into getting actual pdf to generalize on other types of surfaces
-    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI_2 / localDiffusedDirection.size();
+    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI_2;
   }
 
   // [TODO] Right now is only perfect mirror reflection
@@ -245,7 +307,7 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
     Vec3 reflectedDirection = sr.normal * Vec3::Dot(sr.normal * inverseNormal, toEyeDirection) * 2 * inverseNormal - toEyeDirection;
     
     if (inverseNormal == 1) {
-      incomingColor = TraceRay(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth);
+      incomingColor = TraceRay(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth).first;
     } else {
       incomingColor = TraceRayInObject(Ray(sr.hitPosition, reflectedDirection), currentDepth+1, recursionDepth);
     }
@@ -268,7 +330,7 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
       if (inverseNormal == 1) {
         incomingColor = TraceRayInObject(Ray(sr.hitPosition, transmissiveDirection), currentDepth+1, recursionDepth);
       } else {
-        incomingColor = TraceRay(Ray(sr.hitPosition, transmissiveDirection), currentDepth+1, recursionDepth);
+        incomingColor = TraceRay(Ray(sr.hitPosition, transmissiveDirection), currentDepth+1, recursionDepth).first;
       }
       res += incomingColor * sr.material->transmissiveCoefficient * 1.0 / (refractionRatio * refractionRatio);
     } else {

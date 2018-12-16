@@ -27,6 +27,7 @@ cc_library(
     hdrs = ["GeometricLayout.h"],
     deps = [
         ":Ray",
+        "//src/acceleratingStructures:KDTree",
         "//src/geometricObjects:GeometricObject",
         "//src/utils:constants",
         "//src/utils:RGBColor",
@@ -81,6 +82,7 @@ cc_library(
         ":Camera",
         ":GeometricLayout",
         ":Light",
+        "//src/acceleratingStructures:IrradianceCache",
         "//src/geometricObjects:GeometricObject",
         "//src/samplers:Sampler2D",
         "//src/samplers:HemisphereSampler3D",

@@ -8,6 +8,7 @@
 #include "geometricObjects/GeometricObject.h"
 #include "utils/RGBColor.h"
 #include "utils/ShadeRec.h"
+#include "acceleratingStructures/KDTree.h"
 
 enum LayoutType {
   LIST,
