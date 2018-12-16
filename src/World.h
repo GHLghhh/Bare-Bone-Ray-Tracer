@@ -45,6 +45,7 @@ private:
   ViewPlane* viewPlanePtr_;
   Sampler2D* samplerPtr_;
   HemisphereSampler3D diffuseDirectionSampler_;
+  HemisphereSampler3D oneDiffuseDirectionSampler_;
   std::vector<Light*> lights_;
   LayoutType type_;
   std::unique_ptr<GeometricLayout> geometricLayoutPtr_;

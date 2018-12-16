@@ -9,7 +9,8 @@ static double WORLD_INDEX_OF_REFREACTION = 1.0;
 
 World::World()
   : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr),
-    diffuseDirectionSampler_(HemisphereSampler3D(1)), type_(LayoutType::LIST)
+    diffuseDirectionSampler_(HemisphereSampler3D(1000)),
+    oneDiffuseDirectionSampler_(HemisphereSampler3D(1)), type_(LayoutType::LIST)
 {
   geometricLayoutPtr_ = std::unique_ptr<GeometricLayout>(new GeometricLayout());
 }
@@ -18,7 +19,8 @@ World::World(const World& rhs)
   : backGroundColor(rhs.backGroundColor),
     cameraPtr_(rhs.cameraPtr_), viewPlanePtr_(rhs.viewPlanePtr_),
     samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_),
-    diffuseDirectionSampler_(HemisphereSampler3D(1)), type_(rhs.type_)
+    diffuseDirectionSampler_(HemisphereSampler3D(1000)),
+    oneDiffuseDirectionSampler_(HemisphereSampler3D(1)), type_(rhs.type_)
 {
   ConvertFromExistingLayout(type_, (rhs.geometricLayoutPtr_->GetObjects()));
 }
@@ -123,19 +125,20 @@ RGBColor World::TraceRay(const Ray& ray, const int currentDepth, const int recur
   } else {
     RGBColor tempRes = RGBColor(0.0, 0.0, 0.0);
     // emittedColor is 0 if it is not hitting light source
-    if (currentDepth >= 0)
-      tempRes += sr.material->emittedColor;
+    if (currentDepth != 1)
+      res += sr.material->emittedColor;
     // [TODO] ambient component and wrap everything into a shading model?
     // Direct illumination
-    if (currentDepth < 0)
-      tempRes += DirectIllumination(sr);
+    if (currentDepth == 0)
+      res += DirectIllumination(sr);
     // [TODO] right now, indirect illumination will only happen on Mirror
     // (specular 1.0, diffuse 0.0)
-    int numSample = (currentDepth == 0) ? 1000 : 1;
+    // int numSample = (currentDepth == 0) ? 100 : 1;
     
-    for (int i = 0; i < numSample; i++)
-      tempRes += IndirectIllumination(sr, currentDepth, recursionDepth);
-    res += tempRes / numSample;
+    // for (int i = 0; i < numSample; i++)
+    //   tempRes += IndirectIllumination(sr, currentDepth, recursionDepth);
+    // res += tempRes / numSample;
+    res += IndirectIllumination(sr, currentDepth, recursionDepth);
   }
   return res;
 }
@@ -179,10 +182,10 @@ RGBColor World::DirectIllumination(const ShadeRec& sr)
           tempRes += 
             Shader::Diffuse(sr, toLightDirection, *light)
             * Vec3::Dot(areaLightCast->Normal(toLightRecord.first), toLightDirection * -1)
-            * Vec3::Dot(toLightDirection, sr.normal);
+            * Vec3::Dot(toLightDirection, sr.normal)
             // [TODO] figure out how to model it correctly.
-            // / pow((sr.hitPosition - toLightRecord.first).Length() / 100, 2)
-            // * areaLightCast->InvPDF(toLightRecord.first);
+            / pow((sr.hitPosition - toLightRecord.first).Length() / 4, 2)
+            * areaLightCast->InvPDF(toLightRecord.first);
         } else {
           // [TODO] change it into hemisphere form
           tempRes += Shader::Diffuse(sr, toLightDirection, *light);
@@ -204,7 +207,7 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
   }
 
   RGBColor res(0.0, 0.0, 0.0);
-  RGBColor incomingColor;
+  RGBColor incomingColor(0.0, 0.0, 0.0);
   if (sr.material->diffuseCoefficient > 0) {
     // Diffuse
     // [TODO] extract part of it out once BRDF is implemented as separate components
@@ -219,13 +222,19 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
     Vec3 u = Vec3::Cross(w, driftW).Unit();
     Vec3 v = Vec3::Cross(w, u).Unit();
 
-    Vec3 localDiffusedDirection = diffuseDirectionSampler_.GenerateSamplePoints()[0];
-    Vec3 diffusedDirection = (u * localDiffusedDirection.x + v * localDiffusedDirection.y + w * localDiffusedDirection.z).Unit();
-
-    incomingColor = TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+    std::vector<Vec3> localDiffusedDirection;
+    if (currentDepth == 0) {
+      localDiffusedDirection = diffuseDirectionSampler_.GenerateSamplePoints();
+    } else {
+      localDiffusedDirection = oneDiffuseDirectionSampler_.GenerateSamplePoints();
+    }
+    for (auto& direction : localDiffusedDirection) {
+      Vec3 diffusedDirection = (u * direction.x + v * direction.y + w * direction.z).Unit();
+      incomingColor += TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+    }
     // [TODO] Directly using pdf for diffuse surface and simplify the equation with it.
     // Need to make it into getting actual pdf to generalize on other types of surfaces
-    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI;
+    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI / localDiffusedDirection.size();
   }
 
   // [TODO] Right now is only perfect mirror reflection
