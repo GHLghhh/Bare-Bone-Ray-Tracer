@@ -3,6 +3,7 @@ cc_binary(
     deps = [
         "//src:RayTracer",
     ],
+    linkopts = ["-lpthread"]
 )
 
 # should point to whatever is in test directory

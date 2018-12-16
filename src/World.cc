@@ -1,5 +1,7 @@
 #include <cmath>
 #include <iostream>
+#include <thread>
+#include <future>
 
 #include "World.h"
 #include "shaders/Shader.h"
@@ -219,6 +221,23 @@ RGBColor World::DirectIllumination(const ShadeRec& sr)
   return res;
 }
 
+std::tuple<RGBColor, double, double> World::PartialRender(std::vector<Vec3>* localDirection_ptr, Vec3 u, Vec3 v, Vec3 w, Vec3 hitPosition, int currentDepth, int recursionDepth, int start, int end)
+{
+  double invDistanceSum = 0;
+  double numHit = 0.0;
+  RGBColor res = RGBColor(0.0, 0.0, 0.0);
+  for (int i = start; i < end; i++) {
+    Vec3 diffusedDirection = (u * (*localDirection_ptr)[i].x + v * (*localDirection_ptr)[i].y + w * (*localDirection_ptr)[i].z).Unit();
+    auto traceRes = TraceRay(Ray(hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
+    res += traceRes.first;
+    if (traceRes.second > 0) {
+        invDistanceSum += 1.0 / traceRes.second;
+        numHit += 1.0;
+    }
+  }
+  return std::make_tuple(res, invDistanceSum, numHit);
+}
+
 RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth, const int recursionDepth, int inverseNormal)
 {
   // End indirect illumination
@@ -279,20 +298,27 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
     double invDistanceSum = 0;
     // double for calculation
     double numHit = 0;
-    for (auto& direction : localDiffusedDirection) {
-      Vec3 diffusedDirection = (u * direction.x + v * direction.y + w * direction.z).Unit();
-      auto traceRes = TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth);
-      incomingColor += traceRes.first;
-      // If here, cache miss, prepare for adding irradiance
-      if (traceRes.second > 0) {
-        invDistanceSum += 1.0 / traceRes.second;
-        numHit += 1.0;
-      }
-    }
+    // handle tracing on direction size > 1
     if (localDiffusedDirection.size() > 1) {
+      int deciSize = localDiffusedDirection.size() / 40;
+      std::vector<std::future<std::tuple<RGBColor, double, double>>> incomingRes;
+      for (int i = 0; i < localDiffusedDirection.size(); i+=deciSize) {
+        int end = (i+deciSize > localDiffusedDirection.size()) ? localDiffusedDirection.size() : (i+deciSize);
+        incomingRes.push_back(std::async(&World::PartialRender, this, &localDiffusedDirection, u, v, w, sr.hitPosition, currentDepth, recursionDepth, i, end));
+      }
+      for (auto& oneRes : incomingRes) {
+        auto resTuple = oneRes.get();
+        incomingColor += std::get<0>(resTuple);
+        invDistanceSum += std::get<1>(resTuple);
+        numHit += std::get<2>(resTuple);
+      }
       // If here, cache miss, add sampling result to cache
       incomingColor = incomingColor / localDiffusedDirection.size();
       irradianceCache_.AddPointToTree(Irradiance(sr.hitPosition, incomingColor, sr.normal, numHit / invDistanceSum));
+    // handle tracing on direction size = 1
+    } else {
+      Vec3 diffusedDirection = (u * localDiffusedDirection[0].x + v * localDiffusedDirection[0].y + w * localDiffusedDirection[0].z).Unit();
+      incomingColor += TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth).first;
     }
     // [TODO] Directly using pdf for diffuse surface and simplify the equation with it.
     // Need to make it into getting actual pdf to generalize on other types of surfaces

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "Camera.h"
@@ -41,6 +42,7 @@ private:
     LayoutType type, std::vector<GeometricObject*> layoutObjs);
 
   std::pair<RGBColor, double> TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
+  std::tuple<RGBColor, double, double> PartialRender(std::vector<Vec3>* localDirection_ptr, Vec3 u, Vec3 v, Vec3 w, Vec3 hitPosition, int currentDepth, int recursionDepth, int start, int end);
   RGBColor TraceRayInObject(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
   RGBColor DirectIllumination(const ShadeRec& sr);
   RGBColor IndirectIllumination(const ShadeRec& sr, const int currentDepth, const int recursionDepth, int inverseNormal = 1);
