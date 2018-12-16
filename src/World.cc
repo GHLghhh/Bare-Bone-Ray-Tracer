@@ -9,7 +9,7 @@ static double WORLD_INDEX_OF_REFREACTION = 1.0;
 
 World::World()
   : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr),
-    diffuseDirectionSampler_(HemisphereSampler3D(1000)),
+    diffuseDirectionSampler_(HemisphereSampler3D(100)),
     oneDiffuseDirectionSampler_(HemisphereSampler3D(1)), type_(LayoutType::LIST)
 {
   geometricLayoutPtr_ = std::unique_ptr<GeometricLayout>(new GeometricLayout());
@@ -19,7 +19,7 @@ World::World(const World& rhs)
   : backGroundColor(rhs.backGroundColor),
     cameraPtr_(rhs.cameraPtr_), viewPlanePtr_(rhs.viewPlanePtr_),
     samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_),
-    diffuseDirectionSampler_(HemisphereSampler3D(1000)),
+    diffuseDirectionSampler_(HemisphereSampler3D(100)),
     oneDiffuseDirectionSampler_(HemisphereSampler3D(1)), type_(rhs.type_)
 {
   ConvertFromExistingLayout(type_, (rhs.geometricLayoutPtr_->GetObjects()));
@@ -214,12 +214,12 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
     // Create u, v, w unit vector for mapping hemisphere samples on world coordinate
     Vec3 w = sr.normal;
     // Variable used for generating orthogonal coordinate
-    Vec3 driftW = Vec3(
-      Vec3::Dot(Vec3(cos(M_PI_4), -sin(M_PI_4), 0.0), w),
-      Vec3::Dot(Vec3(sin(M_PI_4), cos(M_PI_4), 0.0), w),
-      Vec3::Dot(Vec3(0.0, 0.0, 1.0), w));
+    // Vec3 driftW = Vec3(
+    //   Vec3::Dot(Vec3(cos(M_PI_4), -sin(M_PI_4), 0.0), w),
+    //   Vec3::Dot(Vec3(sin(M_PI_4), cos(M_PI_4), 0.0), w),
+    //   Vec3::Dot(Vec3(0.0, 0.0, 1.0), w));
 
-    Vec3 u = Vec3::Cross(w, driftW).Unit();
+    Vec3 u = Vec3::Cross(w, (fabs(w.x)>.1?Vec3(0.0,1.0,0.0):Vec3(1.0, 0.0, 0.0))).Unit();
     Vec3 v = Vec3::Cross(w, u).Unit();
 
     std::vector<Vec3> localDiffusedDirection;
@@ -234,7 +234,7 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
     }
     // [TODO] Directly using pdf for diffuse surface and simplify the equation with it.
     // Need to make it into getting actual pdf to generalize on other types of surfaces
-    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI / localDiffusedDirection.size();
+    res += incomingColor * sr.material->color * sr.material->diffuseCoefficient * M_PI_2 / localDiffusedDirection.size();
   }
 
   // [TODO] Right now is only perfect mirror reflection
