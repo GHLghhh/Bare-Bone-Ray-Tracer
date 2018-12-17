@@ -11,7 +11,7 @@ static double WORLD_INDEX_OF_REFREACTION = 1.0;
 
 World::World()
   : cameraPtr_(nullptr), viewPlanePtr_(nullptr), samplerPtr_(nullptr),
-    diffuseDirectionSampler_(HemisphereSampler3D(100)),
+    diffuseDirectionSampler_(HemisphereSampler3D(10000)),
     oneDiffuseDirectionSampler_(HemisphereSampler3D(1)),
     irradianceCache_(IrradianceCache()), type_(LayoutType::LIST)
 {
@@ -22,7 +22,7 @@ World::World(const World& rhs)
   : backGroundColor(rhs.backGroundColor),
     cameraPtr_(rhs.cameraPtr_), viewPlanePtr_(rhs.viewPlanePtr_),
     samplerPtr_(rhs.samplerPtr_), lights_(rhs.lights_),
-    diffuseDirectionSampler_(HemisphereSampler3D(100)),
+    diffuseDirectionSampler_(HemisphereSampler3D(10000)),
     oneDiffuseDirectionSampler_(HemisphereSampler3D(1)),
     irradianceCache_(IrradianceCache()), type_(rhs.type_)
 {
@@ -316,7 +316,7 @@ RGBColor World::IndirectIllumination(const ShadeRec& sr, const int currentDepth,
       incomingColor = incomingColor / localDiffusedDirection.size();
       irradianceCache_.AddPointToTree(Irradiance(sr.hitPosition, incomingColor, sr.normal, numHit / invDistanceSum));
     // handle tracing on direction size = 1
-    } else {
+    } else if (localDiffusedDirection.size() == 1) {
       Vec3 diffusedDirection = (u * localDiffusedDirection[0].x + v * localDiffusedDirection[0].y + w * localDiffusedDirection[0].z).Unit();
       incomingColor += TraceRay(Ray(sr.hitPosition, diffusedDirection), currentDepth + 1, recursionDepth).first;
     }
