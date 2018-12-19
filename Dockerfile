@@ -12,4 +12,5 @@ RUN apt-get -y --no-install-recommends install bazel
 # Compile source
 WORKDIR /workspace
 COPY . .
-RUN bazel build --cxxopt='-std=c++11' ray_tracer
+# [TODO] fix this workaround: --incompatible_remove_native_http_archive=false
+RUN bazel build --incompatible_remove_native_http_archive=false --cxxopt='-std=c++11' ray_tracer

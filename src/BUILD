@@ -4,19 +4,7 @@ cc_library(
     name = "RayTracer",
     srcs = ["main.cc"],
     deps = [
-        ":Ray",
-        ":World",
-        "//src/thirdParty:png",
-        "//src/thirdParty:rgbapixel",
-        "//src/geometricObjects:Plane",
-        "//src/geometricObjects:Sphere",
-        "//src/geometricObjects:Triangle",
-        "//src/materials:Material",
-        "//src/samplers:MultiJitteredSampler2D",
-        "//src/samplers:Sampler2D",
-        "//src/utils/io:loadMeshes",
-        "//src/utils:RGBColor",
-        "//src/utils:Vec3",
+        "//src/utils:predefinedScenes",
     ],
 )
 
@@ -39,6 +27,7 @@ cc_library(
     hdrs = ["GeometricLayout.h"],
     deps = [
         ":Ray",
+        "//src/acceleratingStructures:KDTree",
         "//src/geometricObjects:GeometricObject",
         "//src/utils:constants",
         "//src/utils:RGBColor",
@@ -53,6 +42,7 @@ cc_library(
     hdrs = ["Light.h"],
     deps = [
         "//src/geometricObjects:Sphere",
+        "//src/geometricObjects:Triangle",
         "//src/materials:Material",
         "//src/samplers:HemisphereSampler3D",
         "//src/utils:RGBColor",
@@ -92,8 +82,10 @@ cc_library(
         ":Camera",
         ":GeometricLayout",
         ":Light",
+        "//src/acceleratingStructures:IrradianceCache",
         "//src/geometricObjects:GeometricObject",
         "//src/samplers:Sampler2D",
+        "//src/samplers:HemisphereSampler3D",
         "//src/shaders:Shader",
         "//src/utils:constants",
         "//src/utils:ShadeRec"

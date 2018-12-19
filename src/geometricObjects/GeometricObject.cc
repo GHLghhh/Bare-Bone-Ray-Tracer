@@ -5,6 +5,11 @@ GeometricObject::GeometricObject(Vec3 position, Material* material)
 {  
 }
 
+std::vector<HitRangeElement> GeometricObject::HitRange(const Ray& ray)
+{
+  return std::vector<HitRangeElement>();
+}
+
 void
 GeometricObject::FillShadeRec(
   const Ray& ray, const double t, ShadeRec& sr)

@@ -24,6 +24,17 @@ cc_library(
 )
 
 cc_library(
+    name = "CSGObject",
+    srcs = ["CSGObject.cc"],
+    hdrs = ["CSGObject.h"],
+    deps = [
+        ":GeometricObject",
+        "//src/materials:Material",
+        "//src/utils:ShadeRec",
+    ]
+)
+
+cc_library(
     name = "Sphere",
     srcs = ["Sphere.cc"],
     hdrs = ["Sphere.h"],

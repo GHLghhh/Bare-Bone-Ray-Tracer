@@ -1,4 +1,5 @@
 #include <cmath>
+#include <random>
 
 #include "Light.h"
 
@@ -36,6 +37,11 @@ AreaLight::AreaLight(Vec3 lightPosition, RGBColor color,
 {
   numSamples_ = numSamples;
   area_ = 1;
+}
+
+double AreaLight::InvPDF(const Vec3& lightPosition)
+{
+  return area_;
 }
 
 
@@ -86,4 +92,51 @@ double SphereAreaLight::InvPDF(const Vec3& lightPosition)
 Vec3 SphereAreaLight::Normal(const Vec3& lightPosition)
 {
   return (lightPosition - position_).Unit();
+}
+
+TriangleAreaLight::TriangleAreaLight(
+  Vec3 lightVertex0, Vec3 lightVertex1, Vec3 lightVertex2,
+  Material* material, int numSamples, bool shadow)
+  : AreaLight(lightVertex2, material->emittedColor, numSamples, shadow),
+    Triangle(lightVertex0, lightVertex1, lightVertex2, material)
+{
+  area_ = Vec3::Cross((lightVertex2 - lightVertex1), (lightVertex0 - lightVertex1)).Length() / 2;
+}
+
+std::vector<ToLightRecord> TriangleAreaLight::ToLightRecords(const Vec3& hitPoint) const
+{
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::uniform_real_distribution<> dis(0, 1);
+
+  std::vector<ToLightRecord> res;
+  for (int i = 0; i < numSamples_; i++) {
+    // Generate uniform sample on triangle
+    // Take point0 as base point (origin)
+    // Get 3 point locations in corresponding local frame
+    // Sample and transform to "world" frame
+    // http://mathworld.wolfram.com/TrianglePointPicking.html
+    Vec3 localPoint1 = point1_ - point0_;
+    Vec3 localPoint2 = point2_ - point0_;
+
+    Vec3 sample = localPoint1 * dis(g) + localPoint2 * dis(g) + point0_;
+
+    if (!IsInTriangle(sample)) {
+      sample = point2_ + point1_ - sample;
+    }
+
+    res.push_back(std::make_pair(sample, (sample - hitPoint).Length()));
+  }
+  return res;
+}
+
+void TriangleAreaLight::FillShadeRec(const Ray& ray, const double t, ShadeRec& sr)
+{
+  Triangle::FillShadeRec(ray, t, sr);
+  sr.objectHit = this;
+}
+
+Vec3 TriangleAreaLight::Normal(const Vec3& lightPosition)
+{
+  return normal_;
 }

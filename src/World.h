@@ -1,13 +1,16 @@
 #pragma once
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "Camera.h"
 #include "GeometricLayout.h"
 #include "Light.h"
+#include "acceleratingStructures/IrradianceCache.h"
 #include "geometricObjects/GeometricObject.h"
 #include "samplers/Sampler2D.h"
+#include "samplers/HemisphereSampler3D.h"
 #include "utils/ShadeRec.h"
 
 using Scene = std::vector<std::vector<RGBColor>>;
@@ -29,12 +32,17 @@ public:
   void DiscardGeometricObjects();
   void AddLightSource(Light* objPtr);
 
-  Scene Render();
+  Scene Render(const int recursionDepth = 0);
+
+  std::vector<Vec3*> GetCachePoints() {
+    return irradianceCache_.GetRawVector();
+  }
 private:
   void ConvertFromExistingLayout(
     LayoutType type, std::vector<GeometricObject*> layoutObjs);
 
-  RGBColor TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
+  std::pair<RGBColor, double> TraceRay(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
+  std::tuple<RGBColor, double, double> PartialRender(std::vector<Vec3>* localDirection_ptr, Vec3 u, Vec3 v, Vec3 w, Vec3 hitPosition, int currentDepth, int recursionDepth, int start, int end);
   RGBColor TraceRayInObject(const Ray& ray, const int currentDepth, const int recursionDepth = 0);
   RGBColor DirectIllumination(const ShadeRec& sr);
   RGBColor IndirectIllumination(const ShadeRec& sr, const int currentDepth, const int recursionDepth, int inverseNormal = 1);
@@ -43,6 +51,9 @@ private:
   Camera* cameraPtr_;
   ViewPlane* viewPlanePtr_;
   Sampler2D* samplerPtr_;
+  HemisphereSampler3D diffuseDirectionSampler_;
+  HemisphereSampler3D oneDiffuseDirectionSampler_;
+  IrradianceCache irradianceCache_;
   std::vector<Light*> lights_;
   LayoutType type_;
   std::unique_ptr<GeometricLayout> geometricLayoutPtr_;

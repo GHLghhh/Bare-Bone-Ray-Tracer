@@ -37,8 +37,9 @@ std::vector<Vec3> HemisphereSampler3D::GenerateSamplePoints() const
   for (auto& sample_pair : GenerateSample()) {
     double cos_phi = cos(2.0 * M_PI * sample_pair.first);
     double sin_phi = sin(2.0 * M_PI * sample_pair.first);
-    double cos_theta = pow((1.0 - sample_pair.second), 1.0/ (M_E + 1.0));
-    double sin_theta = sqrt (1.0 - cos_theta * cos_theta);
+    // [TODO] e = 1 for now
+    double cos_theta = pow(sample_pair.second, 0.5 /* 1 / (e + 1)*/);
+    double sin_theta = sqrt (1.0 - sample_pair.second /*cos_theta * cos_theta*/);
     double pu = sin_theta * cos_phi;
     double pv = sin_theta * sin_phi;
     double pw = cos_theta;
